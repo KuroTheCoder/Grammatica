@@ -114,7 +114,7 @@ const FinalLoginPage = () => {
         try {
             await sendPasswordResetEmail(auth, email);
             setResetMessage("Đã gửi email hướng dẫn. Vui lòng kiểm tra hộp thư của bạn.");
-        } catch (_) { // SỬA: Dùng `_` để báo linter biết là không dùng đến biến error
+        } catch { // SỬA: Dùng `_` để báo linter biết là không dùng đến biến error
             setFormError("Không thể gửi email. Email có thể không tồn tại.");
         } finally {
             setLoading(false);
