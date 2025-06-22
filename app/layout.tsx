@@ -1,17 +1,10 @@
+// File: app/layout.tsx
+
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google"; // Hoặc font Geist của bạn
 import "./globals.css";
-import HtmlClassFixer from "./Components/HtmlClassFixer"; // nhớ tạo file này
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: "Grammatica Web App",
@@ -24,13 +17,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="mdl-js">
-        <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f6f5f7] flex items-center justify-center min-h-screen`}
-        >
-        <HtmlClassFixer />
-        {children}
-        </body>
+        <html lang="en">
+        {/* Body không có class style, để các layout con tự quyết định */}
+        <body className={inter.className}>{children}</body>
         </html>
     );
 }

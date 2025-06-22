@@ -25,3 +25,71 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Paste at the end of app/globals.css */
+
+@keyframes animate-noise {
+  0%, 100% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 50% 50%;
+  }
+}
+
+.noise-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit; /* Thừa hưởng bo góc từ thẻ cha */
+}
+
+/* Dùng mask để tạo viền mờ cho hiệu ứng */
+.noise-container {
+  mask-image: radial-gradient(300px at center, white, transparent);
+  -webkit-mask-image: radial-gradient(300px at center, white, transparent);
+}
+
+.noise-container::before,
+.noise-container::after {
+  content: "";
+  position: absolute;
+  inset: -100px;
+  background-repeat: repeat;
+  animation: animate-noise 5s linear infinite;
+}
+
+.noise-container::before {
+  background-image: radial-gradient(circle at center, hsla(var(--color-a), 0.5) 0%, transparent 40%);
+  background-size: 20px 20px;
+  animation-duration: 4s;
+}
+
+.noise-container::after {
+  background-image: radial-gradient(circle at center, hsla(var(--color-b), 0.5) 0%, transparent 40%);
+  background-size: 30px 30px;
+  animation-duration: 6s;
+  animation-direction: reverse;
+}
+.social-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 40px;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+.social-icon:hover {
+    background-color: #eee;
+}
+.form-input {
+    background-color: #eee;
+    border: none;
+    padding: 12px 15px;
+    margin: 8px 0;
+    width: 100%;
+    border-radius: 5px;
+}
