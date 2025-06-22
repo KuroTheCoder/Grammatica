@@ -1,6 +1,7 @@
 // lib/firebase.ts
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import {getApp, getApps, initializeApp} from "firebase/app";
+import {getAuth} from "firebase/auth";
+import {getFirestore} from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -11,10 +12,12 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
+// Xuất ra các service để dùng trong ứng dụng
+
 // Khởi tạo app nếu chưa tồn tại
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-
+const db = getFirestore(app);
 // Tạo các dịch vụ cần dùng
 const auth = getAuth(app);
 
-export { auth, app };
+export {app, auth, db};

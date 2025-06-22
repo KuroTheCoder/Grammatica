@@ -17,7 +17,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="vie" suppressHydrationWarning>
         {/* Body không có class style, để các layout con tự quyết định */}
         <body className={inter.className}>{children}</body>
         </html>

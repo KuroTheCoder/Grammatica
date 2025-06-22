@@ -3,23 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@react-three/drei": "^10.3.0",
+    "@react-three/fiber": "^9.1.2",
     "@tailwindcss/vite": "^4.1.10",
+    "@tsparticles/react": "^3.0.0",
+    "@tsparticles/slim": "^3.8.1",
     "firebase": "^11.9.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.522.0",
+    "maath": "^0.10.8",
     "motion": "^12.18.1",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-    "react-intersection-observer": "^9.16.0"
+    "react-intersection-observer": "^9.16.0",
+    "three": "^0.177.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

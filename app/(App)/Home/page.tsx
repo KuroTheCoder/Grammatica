@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from 'next/navigation'; // Import useRouter
+import Cookies from 'js-cookie'; // Import js-cookie
 import { FcGraduationCap } from "react-icons/fc";
+import { auth } from '@/lib/firebase'; // Import auth from your firebase config
+import { signOut } from "firebase/auth"; // Import signOut
 
 const menuItems = [
     { label: "Luyện kỹ năng", icon: "🎧" },
@@ -13,6 +17,19 @@ const menuItems = [
 
 export default function EnglishDashboard() {
     const [active, setActive] = useState("Luyện kỹ năng");
+    const router = useRouter(); // Initialize useRouter
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth); // Sign out from Firebase
+            Cookies.remove('auth-token'); // Remove the auth token cookie
+            console.log("User logged out successfully");
+            router.replace('/Login'); // Redirect to login page (adjust path if needed)
+        } catch (error) {
+            console.error("Error logging out: ", error);
+            // Handle any logout errors here (e.g., display a message to the user)
+        }
+    };
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen w-full bg-[#f3f4f6]">
@@ -21,8 +38,8 @@ export default function EnglishDashboard() {
                 <div className="h-16 flex items-center justify-center gap-2 px-4 font-bold text-lg">
                     <FcGraduationCap size={28} />
                     <span className="hidden md:block text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2A7B9B] via-[#57C785] to-[#EDDD53]">
-            GRAMMATICA
-          </span>
+                        GRAMMATICA
+                    </span>
                 </div>
                 <nav className="mt-4">
                     {menuItems.map((item) => (
@@ -30,21 +47,20 @@ export default function EnglishDashboard() {
                             key={item.label}
                             onClick={() => setActive(item.label)}
                             className={`group relative flex items-center justify-start px-4 py-3 transition-transform duration-200 ease-in-out cursor-pointer
-      hover:scale-105 hover:bg-blue-50 active:scale-95 ${
+                                hover:scale-105 hover:bg-blue-50 active:scale-95 ${
                                 active === item.label
                                     ? "bg-blue-100 font-semibold text-blue-800"
                                     : "text-gray-700"
                             }`}
                         >
-    <span className="text-xl transition-transform duration-200 ease-in-out group-hover:scale-125">
-      {item.icon}
-    </span>
+                            <span className="text-xl transition-transform duration-200 ease-in-out group-hover:scale-125">
+                                {item.icon}
+                            </span>
                             <span className="ml-3 hidden md:block transition-all duration-200 ease-in-out group-hover:scale-105">
-      {item.label}
-    </span>
+                                {item.label}
+                            </span>
                         </div>
                     ))}
-
                 </nav>
             </aside>
 
@@ -70,7 +86,10 @@ export default function EnglishDashboard() {
                 {/* Active tab title & logout */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
                     <h1 className="text-2xl font-bold text-[#1e3a8a]">{active}</h1>
-                    <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300">
+                    <button
+                        onClick={handleLogout} // Attach the logout handler
+                        className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300"
+                    >
                         Đăng xuất
                     </button>
                 </div>
