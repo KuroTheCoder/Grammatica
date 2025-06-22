@@ -1,178 +1,383 @@
-// app/(App)/Login/page.tsx
 "use client";
 
-import React, { useState, useRef, Suspense, FormEvent, FC, InputHTMLAttributes, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Points, PointMaterial } from '@react-three/drei';
-import type * as THREE from 'three';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaReact, FaUserGraduate, FaChalkboardTeacher, FaBullhorn, FaWrench, FaInfoCircle, FaSyncAlt } from 'react-icons/fa';
-import Cookies from 'js-cookie';
-import { auth, db } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+// SỬA TẠI ĐÂY: Chỉ import Link một lần ở đầu file
+import Link from "next/link";
+import {AnimatePresence, motion, useAnimation, useAnimationControls, useInView, Variants} from "framer-motion";
+import React, {useEffect, useRef, useState} from "react";
+import {
+    FaBars,
+    FaBrain,
+    FaClipboardList,
+    FaDiscord,
+    FaFacebook,
+    FaGithub,
+    FaGraduationCap,
+    FaLeaf,
+    FaRocket,
+    FaTimes,
+    FaUserCheck
+} from 'react-icons/fa';
+import {FiArrowRight, FiLogIn} from 'react-icons/fi';
 
-// ===================================================================
-// 1. BACKGROUND ĐÃ SỬA LỖI HYDRATION
-// ===================================================================
-const generateStars = (count: number, radius: number): Float32Array => {
-    const positions = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-        const i3 = i * 3;
-        const theta = 2 * Math.PI * Math.random();
-        const phi = Math.acos(1 - 2 * Math.random());
-        positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-        positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-        positions[i3 + 2] = radius * Math.cos(phi);
-    }
-    return positions;
-};
+// === CÁC COMPONENT & HOOKS TIỆN ÍCH ===
 
-const SubtleStarfieldBackground = () => (
-    <div className="fixed top-0 left-0 w-full h-full -z-10 bg-gray-900">
-        <Canvas camera={{ position: [0, 0, 1] }}><Suspense fallback={null}><Stars /></Suspense></Canvas>
-    </div>
-);
+const CornerIcon = ({className}: { className?: string }) => (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"
+         className={className}>
+        <path d="M1 15V1H15" stroke="currentColor" strokeWidth="1.5"/>
+    </svg>);
 
-const Stars = () => {
-    const ref = useRef<THREE.Points>(null);
-    // SỬA LỖI HYDRATION: Chỉ tạo sao ở phía client
-    const [positions, setPositions] = useState<Float32Array | null>(null);
+function useMediaQuery(query: string): boolean {
+    const [matches, setMatches] = useState(false);
     useEffect(() => {
-        setPositions(generateStars(5000, 1.5));
+        if (typeof window === 'undefined') return;
+        const media = window.matchMedia(query);
+        if (media.matches !== matches) setMatches(media.matches);
+        const listener = () => setMatches(media.matches);
+        window.addEventListener("resize", listener);
+        return () => window.removeEventListener("resize", listener);
+    }, [matches, query]);
+    return matches;
+}
+
+function ClientOnly({children}: { children: React.ReactNode }) {
+    const [hasMounted, setHasMounted] = useState(false);
+    useEffect(() => {
+        setHasMounted(true);
     }, []);
+    if (!hasMounted) return null;
+    return <>{children}</>;
+}
 
-    useFrame((state, delta) => { if(ref.current) { ref.current.rotation.x -= delta/15; ref.current.rotation.y -= delta/20; }});
-
-    // Chỉ render khi đã có vị trí sao (tránh hydration mismatch)
-    return positions ? (
-        <group rotation={[0, 0, Math.PI / 4]}>
-            <Points ref={ref} positions={positions} stride={3} frustumCulled><PointMaterial transparent color="#a855f7" size={0.003} sizeAttenuation={true} depthWrite={false} /></Points>
-        </group>
-    ) : null;
+const containerVariants: Variants = {hidden: {opacity: 0}, visible: {opacity: 1, transition: {staggerChildren: 0.2}}};
+const itemVariants: Variants = {
+    hidden: {y: 20, opacity: 0},
+    visible: {y: 0, opacity: 1, transition: {type: "spring", stiffness: 100}}
 };
 
-// ===================================================================
-// 2. CÁC COMPONENT GIAO DIỆN
-// ===================================================================
-const GlowingInput: FC<InputHTMLAttributes<HTMLInputElement>> = (props) => (
-    <motion.div whileHover={{ y: -2 }} className="glowing-input-container p-px rounded-lg">
-        <input {...props} className="w-full bg-gray-800 text-gray-200 rounded-[7px] p-3 outline-none" />
-    </motion.div>
+interface AnimatedSectionProps {
+    children: React.ReactNode;
+    className?: string;
+}
+
+const AnimatedSection = ({children, className}: AnimatedSectionProps) => {
+    const controls = useAnimation();
+    const ref = useRef(null);
+    const inView = useInView(ref, {once: true, amount: 0.1});
+    useEffect(() => {
+        if (inView) controls.start("visible");
+    }, [controls, inView]);
+    return <motion.div ref={ref} variants={containerVariants} initial="hidden" animate={controls}
+                       className={className}>{children}</motion.div>;
+};
+
+// COMPONENT LOGO ĐÃ SỬA DÙNG <Link>
+const Logo = () => (
+    <Link href="/" className="flex items-center gap-3 text-white">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
+                    <stop stopColor="#FDE047" />
+                    <stop offset="1" stopColor="#10B981" />
+                </linearGradient>
+            </defs>
+            <path
+                d="M28 16C28 22.6274 22.6274 28 16 28C9.37258 28 4 22.6274 4 16C4 9.37258 9.37258 4 16 4C19.4442 4 22.5134 5.38553 24.6644 7.53612"
+                stroke="url(#logo-gradient)"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <circle cx="24.5" cy="8.5" r="2.5" fill="url(#logo-gradient)" />
+        </svg>
+        <span className="text-2xl font-bold tracking-wider bg-gradient-to-r from-yellow-300 to-emerald-500 text-transparent bg-clip-text">
+            Grammatica
+        </span>
+    </Link>
 );
-const Captcha: FC<{ captchaCode: string; captchaInput: string; onInputChange: (val: string) => void; onRefresh: () => void; }> = ({ captchaCode, captchaInput, onInputChange, onRefresh }) => (
-    <div className="space-y-3">
-        <label className="text-sm text-gray-400">Xác minh bạn không phải robot</label>
-        <div className="flex items-center gap-4">
-            <div className="flex-1 flex items-center justify-center bg-gray-900 border border-gray-700 rounded-lg h-12 select-none"><span className="text-white text-2xl font-mono tracking-[0.3em]" style={{ textDecoration: 'line-through', textDecorationColor: '#4b5563' }}>{captchaCode}</span></div>
-            <motion.button type="button" onClick={onRefresh} className="p-3 h-12 aspect-square bg-gray-800 border border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors" whileHover={{ scale: 1.1, rotate: 45 }} whileTap={{ scale: 0.9 }}><FaSyncAlt className="w-full h-full"/></motion.button>
+
+// SỬA TẠI ĐÂY: Đã xoá các dòng code thừa ở đây
+
+const MockAppUI = () => (
+    <motion.div className="bg-slate-800/50 p-4 rounded-xl shadow-2xl backdrop-blur-sm border border-slate-700"
+                whileHover={{scale: 1.03, rotate: -2}} animate={{y: [0, -15, 0]}}
+                transition={{duration: 4, repeat: Infinity, ease: "easeInOut"}}>
+        <div className="aspect-[4/3] bg-slate-900 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-500 rounded-full"></div>
+                <div className="h-4 bg-slate-700 rounded-full w-2/3"></div>
+            </div>
+            <motion.div className="h-6 bg-slate-700/80 rounded-full w-full" animate={{opacity: [0.8, 1, 0.8]}}
+                        transition={{duration: 1.5, repeat: Infinity}}/>
+            <div className="h-4 bg-slate-700 rounded-full w-1/2"></div>
+            <div className="h-4 bg-slate-700 rounded-full w-3/4"></div>
+            <div className="h-4 bg-slate-700 rounded-full w-2/3"></div>
         </div>
-        <GlowingInput type="text" placeholder="Nhập mã xác nhận..." value={captchaInput} onChange={(e) => onInputChange(e.target.value)} maxLength={5} />
-    </div>
-);
-const NoticeItem: FC<{ icon: React.ReactNode; title: string; date: string }> = ({ icon, title, date }) => (
-    <motion.div whileHover={{ scale: 1.03, y: -4, backgroundColor: "rgba(255, 255, 255, 0.08)", boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)" }} transition={{ type: "spring", stiffness: 300, damping: 20 }} className="bg-white/5 rounded-lg border border-white/10 p-4 flex items-start space-x-4 cursor-pointer">
-        <div className="text-2xl mt-1 text-gray-400">{icon}</div>
-        <div><h4 className="font-bold text-white">{title}</h4><p className="text-sm text-gray-500">{date}</p></div>
-    </motion.div>
-);
-const RoleSlider: FC<{ isTeacher: boolean; onRoleChange: (isTeacher: boolean) => void }> = ({ isTeacher, onRoleChange }) => (
-    <div className="relative flex w-full p-1 bg-white/5 rounded-lg border border-white/10">
-        <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 30 }} className="absolute top-1 bottom-1 w-1/2 rounded-md bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg" style={{ x: isTeacher ? '100%' : '0%' }}/>
-        <motion.button type="button" onClick={() => onRoleChange(false)} className="relative z-10 w-1/2 py-2.5 text-center font-semibold transition-colors flex items-center justify-center gap-2" whileHover={{ scale: 1.05 }}><FaUserGraduate className={!isTeacher ? 'text-white' : 'text-gray-400'}/><span className={!isTeacher ? 'text-white' : 'text-gray-400'}>Học sinh</span></motion.button>
-        <motion.button type="button" onClick={() => onRoleChange(true)} className="relative z-10 w-1/2 py-2.5 text-center font-semibold transition-colors flex items-center justify-center gap-2" whileHover={{ scale: 1.05 }}><FaChalkboardTeacher className={isTeacher ? 'text-white' : 'text-gray-400'}/><span className={isTeacher ? 'text-white' : 'text-gray-400'}>Giáo viên</span></motion.button>
-    </div>
-);
+    </motion.div>);
+const MagicRevealEffect = ({colors}: { colors: string[] }) => (
+    <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} transition={{duration: 0.5}}
+                className="absolute inset-0">
+        <div className="noise-container"
+             style={{'--color-a': colors[0], '--color-b': colors[1]} as React.CSSProperties}/>
+    </motion.div>);
+const ApproachCard = ({title, description, icon, colors}: {
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    colors: string[];
+}) => {
+    const [hovered, setHovered] = useState(false);
+    const isMobile = useMediaQuery("(max-width: 768px)");
+    const iconControls = useAnimationControls();
+    const textControls = useAnimationControls();
+    useEffect(() => {
+        if (hovered) {
+            iconControls.start({opacity: 0, x: -100, transition: {duration: 0.3, ease: 'easeIn'}});
+            textControls.start({opacity: 1, transition: {delay: 0.1, duration: 0.3, ease: 'easeOut'}});
+        } else {
+            textControls.start({opacity: 0, transition: {duration: 0.2, ease: 'easeIn'}});
+            iconControls.set({x: 100});
+            iconControls.start({opacity: 1, x: 0, transition: {delay: 0.1, duration: 0.3, ease: 'easeOut'}});
+        }
+    }, [hovered, iconControls, textControls]);
+    const cardDecorations = (<><CornerIcon className="absolute h-6 w-6 -top-3 -left-3 text-white/10"/><CornerIcon
+        className="absolute h-6 w-6 -bottom-3 -left-3 text-white/10"/><CornerIcon
+        className="absolute h-6 w-6 -top-3 -right-3 text-white/10"/><CornerIcon
+        className="absolute h-6 w-6 -bottom-3 -right-3 text-white/10"/><AnimatePresence>{hovered &&
+        <MagicRevealEffect colors={colors}/>}</AnimatePresence></>);
+    if (isMobile) {
+        const cardVariants = {
+            initial: {height: "15rem", y: 0, boxShadow: "0px 0px 0px rgba(0, 0, 0, 0)"},
+            hovered: {height: "26rem", y: -8, boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.3)"},
+        };
+        return (<motion.div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+                            variants={cardVariants} initial="initial" animate={hovered ? "hovered" : "initial"}
+                            transition={{type: "spring", stiffness: 300, damping: 25}}
+                            className="group/canvas-card w-full max-w-sm mx-auto p-4 relative rounded-3xl border border-white/[0.2] bg-slate-900/50 flex flex-col justify-center items-center overflow-hidden"> {cardDecorations}
+            <div className="relative z-20 text-center">
+                <div
+                    className="transition-transform duration-300 ease-out group-hover/canvas-card:scale-75 group-hover/canvas-card:-translate-y-4">{icon}</div>
+                <AnimatePresence>{hovered && (<motion.div initial={{opacity: 0, y: 20}} animate={{
+                    opacity: 1,
+                    y: 0,
+                    transition: {delay: 0.1, duration: 0.3}
+                }} exit={{opacity: 0, y: 20}} className="mt-6"><h2
+                    className="text-white text-2xl font-bold">{title}</h2><p className="text-base mt-2"
+                                                                             style={{color: "#e4ecff"}}>{description}</p>
+                </motion.div>)}</AnimatePresence></div>
+        </motion.div>);
+    }
+    return (<motion.div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+                        whileHover={{y: -8, scale: 1.02, boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.3)"}}
+                        transition={{type: "spring", stiffness: 300, damping: 20}}
+                        className="w-full max-w-sm mx-auto p-4 relative h-40 rounded-3xl border border-white/[0.2] bg-slate-900/50 flex items-center justify-center overflow-hidden"> {cardDecorations}
+        <motion.div className="absolute" animate={iconControls} initial={{opacity: 1, x: 0}}> {icon} </motion.div>
+        <motion.div className="absolute text-center" animate={textControls} initial={{opacity: 0}}><h2
+            className="text-white text-2xl font-bold">{title}</h2> <p className="text-base mt-1"
+                                                                      style={{color: "#e4ecff"}}>{description}</p>
+        </motion.div>
+    </motion.div>);
+};
+const HowItWorksSection = () => {
+    const steps = [{
+        title: "Đăng nhập",
+        description: "Sử dụng tài khoản được nhà trường cung cấp.",
+        icon: <div
+            className={`w-24 h-24 rounded-full flex items-center justify-center bg-emerald-900/50 border border-emerald-500/30 text-emerald-400`}>
+            <FaUserCheck size={40}/></div>,
+        colors: ['147 83% 35%', '158 64% 52%']
+    }, {
+        title: "Kiểm tra Năng lực",
+        description: "Hoàn thành bài test để AI xây dựng lộ trình.",
+        icon: <div
+            className={`w-24 h-24 rounded-full flex items-center justify-center bg-yellow-900/50 border border-yellow-500/30 text-yellow-400`}>
+            <FaClipboardList size={40}/></div>,
+        colors: ['45 93% 55%', '54 98% 68%']
+    }, {
+        title: "Chinh phục Lộ trình",
+        description: "Theo lộ trình cá nhân hóa và nhận phản hồi.",
+        icon: <div
+            className={`w-24 h-24 rounded-full flex items-center justify-center bg-sky-900/50 border border-sky-500/30 text-sky-400`}>
+            <FaGraduationCap size={40}/></div>,
+        colors: ['204 96% 54%', '199 98% 65%']
+    },];
+    return (<section id="how-it-works" className="relative py-20 lg:py-28 px-4">
+        <div aria-hidden="true"
+             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-emerald-900/40 rounded-full blur-3xl"/>
+        <AnimatedSection className="w-full relative z-10">
+            <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold text-center text-white"
+                       style={{textShadow: '0 2px 15px rgba(0, 0, 0, 0.5)'}}>Học thật dễ dàng
+            </motion.h2>
+            <motion.p variants={itemVariants} className="mt-4 text-lg text-slate-300 max-w-2xl text-center mx-auto">Chỉ
+                với 3 bước đơn giản, AI sẽ xây dựng một lộ trình học tập được thiết kế riêng cho bạn.
+            </motion.p>
+            <div
+                className="my-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">{steps.map((step, index) => (
+                <ApproachCard key={index} title={step.title} icon={step.icon} description={step.description}
+                              colors={step.colors}/>))}</div>
+        </AnimatedSection></section>);
+};
 
-// ===================================================================
-// 3. COMPONENT LOGIN CHÍNH
-// ===================================================================
-const FinalLoginPage = () => {
-    const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [isTeacher, setIsTeacher] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [formError, setFormError] = useState('');
-    const [captchaCode, setCaptchaCode] = useState('');
-    const [captchaInput, setCaptchaInput] = useState('');
-    const generateCaptcha = useCallback(() => { const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let result = ''; for (let i = 0; i < 5; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); } setCaptchaCode(result); }, []);
-    useEffect(() => { generateCaptcha(); }, [generateCaptcha]);
-    const handleLogin = async (e: FormEvent) => {
-        e.preventDefault(); setFormError('');
-        if (captchaInput.toLowerCase() !== captchaCode.toLowerCase()) { setFormError('Mã xác nhận không chính xác.'); generateCaptcha(); setCaptchaInput(''); return; }
-        setLoading(true);
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            const userDocRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-                const { role } = userDoc.data();
-                if (role === (isTeacher ? 'teacher' : 'student')) {
-                    const token = await user.getIdToken();
-                    Cookies.set('auth-token', token, { expires: 1, path: '/' });
-                    router.replace('/dashboard');
-                } else { throw new Error('wrong-role'); }
-            } else { throw new Error('no-firestore-profile'); }
-        } catch (error) {
-            const getErrorCode = (err: unknown): string => {
-                if (err instanceof Error) return err.message;
-                if (typeof err === 'object' && err !== null && 'code' in err) return String((err as { code: string }).code);
-                return 'unknown-error';
-            };
-            const errorCode = getErrorCode(error);
-            switch (errorCode) {
-                case 'auth/user-not-found': case 'auth/wrong-password': case 'auth/invalid-credential': setFormError('Thông tin đăng nhập không chính xác.'); break;
-                case 'wrong-role': setFormError('Vai trò bạn chọn không khớp với tài khoản.'); break;
-                case 'no-firestore-profile': setFormError('Tài khoản không có dữ liệu trong hệ thống.'); break;
-                default: setFormError('Đã có lỗi xảy ra, vui lòng thử lại.'); break;
-            }
-            generateCaptcha(); setCaptchaInput('');
-        } finally { setLoading(false); }
-    };
+// === COMPONENT CHÍNH CỦA TRANG ===
+export default function HomePage() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [hoveredLink, setHoveredLink] = useState('');
+    const [isScrolled, setIsScrolled] = useState(false);
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+    const navLinks = [{id: 'features', label: 'Tính năng', href: '#features'}, {
+        id: 'how-it-works',
+        label: 'Cách hoạt động',
+        href: '#how-it-works'
+    },];
+    const features = [{
+        icon: <FaLeaf size={32} className="text-emerald-500"/>,
+        title: "Bài học Tự nhiên",
+        description: "Tiếp cận kiến thức một cách tự nhiên và sinh động, không còn nhàm chán như sách vở."
+    }, {
+        icon: <FaBrain size={32} className="text-emerald-500"/>,
+        title: "Phản hồi Thông minh",
+        description: "AI phân tích và chỉ ra lỗi sai một cách chi tiết, giúp bạn hiểu sâu và nhớ lâu."
+    }, {
+        icon: <FaRocket size={32} className="text-emerald-500"/>,
+        title: "Tăng tốc Lộ trình",
+        description: "Lộ trình học được cá nhân hóa, tập trung vào điểm yếu và giúp bạn tiến bộ vượt bậc."
+    }];
 
-    const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-    const itemVariants = { hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } };
+    // Để dùng motion với Link, chúng ta cần bọc nó
+    const MotionLink = motion(Link);
 
     return (
-        <div className="min-h-screen w-full bg-gray-900 text-gray-200 flex items-center justify-center p-4 overflow-hidden">
-            <SubtleStarfieldBackground />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, ease: "easeOut" }} className="w-full max-w-4xl bg-gray-900/40 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl shadow-purple-500/10">
-                <div className="grid grid-cols-1 lg:grid-cols-2">
-                    <div className="p-8 sm:p-12">
-                        <motion.div variants={containerVariants} initial="hidden" animate="show">
-                            <motion.div variants={itemVariants} className="flex items-center gap-3 mb-2"><FaReact className="text-cyan-400 text-4xl animate-spin-slow" /><h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Grammatica</h2></motion.div>
-                            <motion.p variants={itemVariants} className="text-gray-400 mb-8">Chào mừng quay trở lại hệ thống.</motion.p>
-                            <form onSubmit={handleLogin} noValidate className="space-y-5">
-                                <motion.div variants={itemVariants}><RoleSlider isTeacher={isTeacher} onRoleChange={setIsTeacher} /></motion.div>
-                                <motion.div variants={itemVariants}><GlowingInput type="email" placeholder="Email nhà trường" value={email} onChange={(e) => setEmail(e.target.value)} /></motion.div>
-                                <motion.div variants={itemVariants}><GlowingInput type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} /></motion.div>
-                                <motion.div variants={itemVariants}><Captcha captchaCode={captchaCode} captchaInput={captchaInput} onInputChange={setCaptchaInput} onRefresh={() => { generateCaptcha(); setCaptchaInput(''); }} /></motion.div>
-                                <AnimatePresence>{formError && (<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-red-400 text-center text-sm">{formError}</motion.p>)}</AnimatePresence>
-                                <motion.div variants={itemVariants}>
-                                    <motion.button type="submit" disabled={!email || !password || !captchaInput || loading} className="action-button-shine" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                                        {loading ? 'Đang xác thực...' : 'Đăng Nhập'}
-                                    </motion.button>
-                                </motion.div>
-                            </form>
-                        </motion.div>
+        <div className="w-full">
+            <style
+                dangerouslySetInnerHTML={{__html: ` html { scroll-behavior: smooth; } .noise-container { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; background-image: radial-gradient(circle at 25% 25%, hsla(var(--color-a), 0.5), transparent 50%), radial-gradient(circle at 75% 75%, hsla(var(--color-b), 0.5), transparent 50%), url('data:image/svg+xml,%3Csvg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%" height="100%" filter="url(%23noiseFilter)"/%3E%3C/svg%3E'); background-size: cover, cover, auto; opacity: 0.15; mix-blend-mode: screen; }`}}/>
+            <header
+                className="relative w-full overflow-hidden bg-gradient-to-br from-green-900/20 via-emerald-800/20 to-yellow-600/10 backdrop-blur-sm">
+                <div aria-hidden="true"
+                     className="absolute top-0 left-0 w-96 h-96 bg-yellow-400/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+                <div aria-hidden="true"
+                     className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+                <motion.nav initial={{y: -100}} animate={{y: 0}} transition={{duration: 0.5, ease: "easeOut"}}
+                            className={`fixed top-0 left-0 right-0 z-20 transition-colors duration-300 ${isScrolled ? 'bg-slate-900/80 backdrop-blur-lg shadow-md' : 'bg-black/30 backdrop-blur-md'}`}>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-16"><Logo/>
+                            <div className="hidden md:flex items-center"
+                                 onMouseLeave={() => setHoveredLink('')}>{navLinks.map((link) => (
+                                <a key={link.id} href={link.href} onMouseEnter={() => setHoveredLink(link.id)}
+                                   className="relative text-gray-300 px-4 py-2 text-sm font-medium transition-colors hover:text-white">{hoveredLink === link.id &&
+                                    <motion.span layoutId="navbar-highlight"
+                                                 className="absolute inset-0 bg-white/10 rounded-full"
+                                                 transition={{type: 'spring', stiffness: 350, damping: 30}}/>}<span
+                                    className="relative z-10">{link.label}</span></a>))}
+                                <MotionLink href="/Login"
+                                            className="bg-yellow-400 text-green-900 font-semibold py-2 px-4 rounded-lg ml-4"
+                                            whileHover={{scale: 1.05}} whileTap={{scale: 0.95}}>Đăng nhập</MotionLink>
+                            </div>
+                            <div className="md:hidden">
+                                <button onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        className="text-white p-2 rounded-md hover:bg-white/10">{isMenuOpen ?
+                                    <FaTimes size={24}/> : <FaBars size={24}/>}</button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="hidden lg:flex flex-col bg-black/20 p-12">
-                        <motion.div variants={containerVariants} initial="hidden" animate="show">
-                            <motion.h3 variants={itemVariants} className="text-2xl font-bold text-white mb-6">Bảng Tin Nhà Trường</motion.h3>
-                            <motion.div variants={itemVariants} className="space-y-4">
-                                <NoticeItem icon={<FaBullhorn className="text-yellow-400" />} title="Lịch nghỉ Lễ Quốc Khánh 2/9" date="25/08/2023" />
-                                <NoticeItem icon={<FaWrench className="text-cyan-400" />} title="Bảo trì hệ thống e-learning" date="23/08/2023" />
-                                <NoticeItem icon={<FaInfoCircle className="text-green-400" />} title="Cập nhật quy chế thi học kỳ mới" date="20/08/2023" />
-                            </motion.div>
+                    {isMenuOpen && (<div className="md:hidden bg-slate-800/90 backdrop-blur-sm">
+                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center"><a href="#features"
+                                                                                         onClick={() => setIsMenuOpen(false)}
+                                                                                         className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Tính
+                            năng</a><a href="#how-it-works" onClick={() => setIsMenuOpen(false)}
+                                       className="text-gray-300 hover:bg-slate-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Cách
+                            hoạt động</a>
+                            <Link href="/Login"
+                                  className="bg-yellow-400 text-green-900 font-semibold py-2 px-4 rounded-lg mt-2 inline-block">Đăng
+                                nhập</Link>
+                        </div>
+                    </div>)}
+                </motion.nav>
+                <div
+                    className="min-h-screen flex flex-col lg:flex-row items-center justify-center gap-10 px-4 md:px-8 max-w-7xl mx-auto pt-16 relative z-10">
+                    <motion.div className="text-center lg:text-left text-white max-w-2xl lg:max-w-xl"
+                                variants={containerVariants} initial="hidden" animate="visible">
+                        <motion.h1 variants={itemVariants}
+                                   className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight">Chinh
+                            phục Tiếng Anh cùng <span className="text-yellow-300">Grammatica</span></motion.h1>
+                        <motion.p variants={itemVariants} className="text-lg md:text-xl text-white/80 mb-8">Nền tảng học
+                            tập hiện đại dành riêng cho sinh viên, kết hợp bài học tương tác và công nghệ AI đột phá.
+                        </motion.p>
+                        <motion.div variants={itemVariants}>
+                            <MotionLink href="/Login"
+                                        className="group bg-yellow-400 text-green-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-yellow-500 inline-flex items-center justify-center gap-2 text-lg"
+                                        whileHover={{scale: 1.05, boxShadow: "0px 0px 20px rgba(250, 204, 21, 0.5)"}}
+                                        whileTap={{scale: 0.95}} transition={{type: "spring", stiffness: 300}}>Bắt đầu
+                                học ngay<FiArrowRight
+                                    className="h-5 w-5 transition-transform group-hover:translate-x-1"/></MotionLink>
                         </motion.div>
-                    </div>
+                    </motion.div>
+                    <motion.div className="w-full max-w-sm lg:max-w-md mt-8 lg:mt-0" initial={{opacity: 0, scale: 0.8}}
+                                animate={{opacity: 1, scale: 1}}
+                                transition={{duration: 0.8, delay: 0.6, type: "spring"}}><MockAppUI/></motion.div>
                 </div>
-            </motion.div>
+            </header>
+            <main>
+                <section id="features" className="relative overflow-hidden py-20 lg:py-28 px-4">
+                    <div aria-hidden="true"
+                         className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-emerald-900/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"/>
+                    <AnimatedSection className="max-w-6xl mx-auto text-center relative z-10">
+                        <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold mb-4">Vì sao nên
+                            chọn <span className="text-emerald-400">Grammatica</span>?
+                        </motion.h2>
+                        <motion.p variants={itemVariants} className="text-slate-400 mb-16 max-w-2xl mx-auto">Chúng tôi
+                            xây dựng một nền tảng thích ứng với bạn, chứ không phải ngược lại.
+                        </motion.p>
+                        <div className="grid md:grid-cols-3 gap-8">{features.map((feature) => (
+                            <motion.div key={feature.title} variants={itemVariants} whileHover={{
+                                y: -8,
+                                scale: 1.02,
+                                boxShadow: "0px 10px 30px rgba(16, 185, 129, 0.3)"
+                            }} transition={{type: "spring", stiffness: 300, damping: 20}}
+                                        className="relative bg-slate-800/60 backdrop-blur-sm p-8 rounded-xl border border-slate-700">
+                                <div className="relative z-10">
+                                    <div className="flex justify-center mb-4">{feature.icon}</div>
+                                    <h3 className="text-xl font-semibold my-4 text-white">{feature.title}</h3><p
+                                    className="text-slate-400">{feature.description}</p></div>
+                            </motion.div>))}</div>
+                    </AnimatedSection></section>
+                <ClientOnly><HowItWorksSection/></ClientOnly>
+                <section className="py-20 lg:py-28 px-4"><AnimatedSection className="max-w-4xl mx-auto text-center">
+                    <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold mb-4 text-white">Sẵn
+                        sàng để nâng trình?
+                    </motion.h2>
+                    <motion.p variants={itemVariants} className="text-slate-400 mb-8 max-w-xl mx-auto">Đăng nhập ngay để
+                        bắt đầu hành trình chinh phục ngoại ngữ của mình.
+                    </motion.p>
+                    <MotionLink variants={itemVariants} href="/Login"
+                                className="group bg-emerald-500 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-emerald-600 inline-flex items-center justify-center gap-2 text-lg"
+                                whileHover={{scale: 1.05, boxShadow: "0px 0px 20px rgba(16, 185, 129, 0.5)"}}
+                                whileTap={{scale: 0.95}} transition={{type: "spring", stiffness: 300}}>Đăng nhập
+                        ngay<FiLogIn className="h-5 w-5 transition-transform group-hover:translate-x-1"/></MotionLink>
+                </AnimatedSection></section>
+            </main>
+            <footer className="text-slate-400 py-8 px-4">
+                <div className="max-w-7xl mx-auto text-center"><p
+                    className="mb-4">© {new Date().getFullYear()} Grammatica. All rights reserved.</p>
+                    <div className="flex justify-center gap-6">{[{
+                        href: "#",
+                        icon: <FaGithub/>,
+                        label: "GitHub"
+                    }, {href: "#", icon: <FaFacebook/>, label: "Facebook"}, {
+                        href: "#",
+                        icon: <FaDiscord/>,
+                        label: "Discord"
+                    }].map(item => (
+                        <motion.a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer"
+                                  aria-label={item.label} className="hover:text-emerald-400 transition-colors text-2xl"
+                                  whileHover={{y: -3}}>{item.icon}</motion.a>))}</div>
+                </div>
+            </footer>
         </div>
     );
-};
-
-export default FinalLoginPage;
+}
