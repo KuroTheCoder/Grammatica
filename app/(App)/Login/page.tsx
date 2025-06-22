@@ -1,4 +1,3 @@
-// File: app/(App)/Login/components/SignInForm.tsx
 "use client";
 
 import { useState } from 'react';
@@ -43,8 +42,13 @@ const SignInForm = () => {
             // Dùng replace để người dùng không thể nhấn "Back" quay lại đây
             router.replace('/Home');
 
-        } catch (err: any) {
-            setError(err.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.');
+        } catch (err: unknown) { // SỬA LỖI TẠI ĐÂY: Dùng `unknown` thay cho `any`
+            // Kiểm tra xem `err` có phải là một đối tượng Error không
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Đã có lỗi không xác định xảy ra. Vui lòng thử lại.');
+            }
             setLoading(false);
         }
     };
