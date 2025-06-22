@@ -1,17 +1,6 @@
 @import "tailwindcss";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
-/* SỬA THEO TAILWIND V4 */
-@import "tailwindcss/utilities";
 
-/* ... các style khác của bạn như @property, glowing-input-container... */
-/* Hãy chắc chắn các class custom vẫn còn ở đây */
-@property --gradient-angle {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 0deg;
-}
-
-/* v...v... */
 :root {
     --background: #ffffff;
     --foreground: #171717;
@@ -36,7 +25,6 @@ body {
     color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
 }
-
 /* Paste at the end of app/globals.css */
 
 @keyframes animate-noise {
@@ -84,7 +72,6 @@ body {
     animation-duration: 6s;
     animation-direction: reverse;
 }
-
 .social-icon {
     display: inline-flex;
     justify-content: center;
@@ -95,11 +82,9 @@ body {
     border-radius: 50%;
     transition: all 0.2s;
 }
-
 .social-icon:hover {
     background-color: #eee;
 }
-
 .form-input {
     background-color: #eee;
     border: none;
@@ -108,160 +93,3 @@ body {
     width: 100%;
     border-radius: 5px;
 }
-
-.input-glass {
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e5e7eb;
-    border-radius: 8px;
-    padding: 14px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    outline: none;
-}
-
-.input-glass::placeholder {
-    color: #9ca3af;
-}
-
-.input-glass:focus {
-    border-color: #a855f7;
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3);
-}
-
-.action-button-shine:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.25);
-}
-
-.action-button-shine:disabled {
-    background-image: none;
-    background-color: #374151;
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.action-button-shine::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: all 0.7s;
-}
-
-.action-button-shine:hover:not(:disabled)::before {
-    left: 100%;
-}
-
-.animate-spin-slow {
-    animation: spin 10s linear infinite;
-}
-
-@property --gradient-angle {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 0deg;
-}
-
-@keyframes rotate-gradient {
-    0% {
-        --gradient-angle: 0deg;
-    }
-    100% {
-        --gradient-angle: 360deg;
-    }
-}
-
-.glowing-input-container {
-    position: relative;
-    background: #1f2937;
-}
-
-.glowing-input-container:focus-within {
-    background-image: conic-gradient(from var(--gradient-angle), #8b5cf6, #ec4899, #fde047, #38bdf8, #8b5cf6);
-    animation: rotate-gradient 3s linear infinite;
-}
-.animate-spin-slow {
-    animation: spin 10s linear infinite;
-}
-@keyframes gradient-animation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.animated-gradient-bg {
-    background: linear-gradient(-45deg, #0a192f, #1e293b, #4a044e, #1e293b);
-    background-size: 400% 400%;
-    animation: gradient-animation 20s ease infinite;
-}
-
-@property --gradient-angle {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 0deg;
-}
-
-/* SỬA: Dải màu "Forest" */
-@keyframes rotate-gradient {
-    0% { --gradient-angle: 0deg; }
-    100% { --gradient-angle: 360deg; }
-}
-.glowing-input-container {
-    position: relative;
-    background: #1f2937; /* gray-800 */
-    transition: background 0.3s ease; /* Thêm transition cho mượt */
-}
-
-/* SỬA: Kích hoạt glow khi HOVER, không cần focus */
-.glowing-input-container:hover {
-    background-image: conic-gradient(
-            from var(--gradient-angle),
-            #10b981, #fde047, #a3e635, #22c55e, #10b981
-    );
-    animation: rotate-gradient 4s linear infinite;
-}
-
-/* SỬA: Nút bấm với theme "Forest" */
-.action-button-shine {
-    position: relative;
-    width: 100%;
-    background-image: linear-gradient(to right, #16a34a, #10b981); /* green-600 to emerald-500 */
-    color: white;
-    font-weight: bold;
-    padding: 14px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    overflow: hidden;
-}
-.action-button-shine:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
-}
-.action-button-shine:disabled {
-    background-image: none;
-    background-color: #374151;
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.action-button-shine::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: all 0.7s;
-}
-.action-button-shine:hover:not(:disabled)::before { left: 100%; }
-.animate-spin-slow { animation: spin 10s linear infinite; }
