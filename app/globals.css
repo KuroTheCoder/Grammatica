@@ -1,24 +1,164 @@
-/* app/globals.css */
-
-/* =================================================================== */
-/* === PHẦN 1: CODE GỐC CỦA LANDING PAGE (ĐƯỢC GIỮ NGUYÊN) === */
-/* =================================================================== */
-
 @import "tailwindcss";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
-/* app/globals.css */
-@import "tailwindcss/preflight";
-@tailwind utilities;
+/* SỬA THEO TAILWIND V4 */
+@import "tailwindcss/utilities";
 
+/* ... các style khác của bạn như @property, glowing-input-container... */
+/* Hãy chắc chắn các class custom vẫn còn ở đây */
+@property --gradient-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+/* v...v... */
 :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
 }
 
 body {
-    background-color: var(--background);
+    background: var(--background);
     color: var(--foreground);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Paste at the end of app/globals.css */
+
+@keyframes animate-noise {
+    0%, 100% {
+        background-position: 0 0;
+    }
+    50% {
+        background-position: 50% 50%;
+    }
+}
+
+.noise-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit; /* Thừa hưởng bo góc từ thẻ cha */
+}
+
+/* Dùng mask để tạo viền mờ cho hiệu ứng */
+.noise-container {
+    mask-image: radial-gradient(300px at center, white, transparent);
+    -webkit-mask-image: radial-gradient(300px at center, white, transparent);
+}
+
+.noise-container::before,
+.noise-container::after {
+    content: "";
+    position: absolute;
+    inset: -100px;
+    background-repeat: repeat;
+    animation: animate-noise 5s linear infinite;
+}
+
+.noise-container::before {
+    background-image: radial-gradient(circle at center, hsla(var(--color-a), 0.5) 0%, transparent 40%);
+    background-size: 20px 20px;
+    animation-duration: 4s;
+}
+
+.noise-container::after {
+    background-image: radial-gradient(circle at center, hsla(var(--color-b), 0.5) 0%, transparent 40%);
+    background-size: 30px 30px;
+    animation-duration: 6s;
+    animation-direction: reverse;
+}
+
+.social-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 40px;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.social-icon:hover {
+    background-color: #eee;
+}
+
+.form-input {
+    background-color: #eee;
+    border: none;
+    padding: 12px 15px;
+    margin: 8px 0;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.input-glass {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.input-glass::placeholder {
+    color: #9ca3af;
+}
+
+.input-glass:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3);
+}
+
+.action-button-shine:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.25);
+}
+
+.action-button-shine:disabled {
+    background-image: none;
+    background-color: #374151;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.action-button-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: all 0.7s;
+}
+
+.action-button-shine:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.animate-spin-slow {
+    animation: spin 10s linear infinite;
 }
 
 @property --gradient-angle {
@@ -28,30 +168,65 @@ body {
 }
 
 @keyframes rotate-gradient {
+    0% {
+        --gradient-angle: 0deg;
+    }
+    100% {
+        --gradient-angle: 360deg;
+    }
+}
+
+.glowing-input-container {
+    position: relative;
+    background: #1f2937;
+}
+
+.glowing-input-container:focus-within {
+    background-image: conic-gradient(from var(--gradient-angle), #8b5cf6, #ec4899, #fde047, #38bdf8, #8b5cf6);
+    animation: rotate-gradient 3s linear infinite;
+}
+.animate-spin-slow {
+    animation: spin 10s linear infinite;
+}
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animated-gradient-bg {
+    background: linear-gradient(-45deg, #0a192f, #1e293b, #4a044e, #1e293b);
+    background-size: 400% 400%;
+    animation: gradient-animation 20s ease infinite;
+}
+
+@property --gradient-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+/* SỬA: Dải màu "Forest" */
+@keyframes rotate-gradient {
     0% { --gradient-angle: 0deg; }
     100% { --gradient-angle: 360deg; }
 }
-
-/* === GLOWING INPUT EFFECT === */
 .glowing-input-container {
     position: relative;
     background: #1f2937; /* gray-800 */
-    transition: background 0.3s ease;
+    transition: background 0.3s ease; /* Thêm transition cho mượt */
 }
 
+/* SỬA: Kích hoạt glow khi HOVER, không cần focus */
 .glowing-input-container:hover {
     background-image: conic-gradient(
             from var(--gradient-angle),
-            #10b981, /* emerald-500 */
-            #fde047, /* yellow-400 */
-            #a3e635, /* lime-400 */
-            #22c55e, /* green-500 */
-            #10b981
+            #10b981, #fde047, #a3e635, #22c55e, #10b981
     );
     animation: rotate-gradient 4s linear infinite;
 }
 
-/* === ACTION BUTTON EFFECT === */
+/* SỬA: Nút bấm với theme "Forest" */
 .action-button-shine {
     position: relative;
     width: 100%;
@@ -68,19 +243,16 @@ body {
     cursor: pointer;
     overflow: hidden;
 }
-
 .action-button-shine:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
 }
-
 .action-button-shine:disabled {
     background-image: none;
-    background-color: #374151; /* gray-700 */
+    background-color: #374151;
     opacity: 0.6;
     cursor: not-allowed;
 }
-
 .action-button-shine::before {
     content: '';
     position: absolute;
@@ -91,12 +263,5 @@ body {
     background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: all 0.7s;
 }
-
-.action-button-shine:hover:not(:disabled)::before {
-    left: 100%;
-}
-
-/* === MISC === */
-.animate-spin-slow {
-    animation: spin 10s linear infinite;
-}
+.action-button-shine:hover:not(:disabled)::before { left: 100%; }
+.animate-spin-slow { animation: spin 10s linear infinite; }
