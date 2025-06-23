@@ -1,22 +1,18 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Quy tắc cho collection 'users'
-    // {userId} là một biến đại diện cho ID của bất kỳ document nào trong 'users'
+    // Users can only read/write their own document
     match /users/{userId} {
-
-      // Cho phép một người dùng ĐỌC (read) tài liệu của chính họ.
-      // Điều kiện: người dùng phải đăng nhập (request.auth != null)
-      // VÀ uid của họ phải khớp với ID của tài liệu họ muốn đọc (request.auth.uid == userId).
-      allow read: if request.auth != null && request.auth.uid == userId;
-
-      // Tương tự, bạn có thể cho phép người dùng tự CẬP NHẬT (write/update) thông tin của họ
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth.uid == userId;
     }
 
-    // Thêm các quy tắc cho các collection khác ở đây...
-
+    // Anyone can READ announcements, but only admins can WRITE
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+     match /security_tokens/{docId} {
+      allow read, write: if false;
+      }
   }
 }
