@@ -1,18 +1,73 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only read/write their own document
+
+    // ====================================================================
+    // USERS COLLECTION
+    // ====================================================================
     match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
+      // AI ĐƯỢC ĐỌC?
+      // Chỉ user đã đăng nhập và đúng là chủ của document này mới được đọc.
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // AI ĐƯỢC GHI?
+      // TUYỆT ĐỐI KHÔNG cho phép client tự ý ghi/sửa document user.
+      // Mọi thay đổi (như đổi tên, cập nhật profile) phải được thực hiện
+      // thông qua một API được bảo mật (Cloud Function hoặc API Route).
+      // Lý do: Ngăn chặn user tự gán cho mình vai trò "admin".
+      allow write: if false;
     }
 
-    // Anyone can READ announcements, but only admins can WRITE
+    // ====================================================================
+    // ANNOUNCEMENTS COLLECTION
+    // ====================================================================
     match /announcements/{announcementId} {
+      // AI ĐƯỢC ĐỌC?
+      // Bất kỳ ai, kể cả người dùng chưa đăng nhập.
       allow read: if true;
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // AI ĐƯỢC GHI?
+      // Chỉ những user đã đăng nhập, và có trường 'role' trong document
+      // của họ là một MẢNG (array) chứa giá trị 'admin'.
+      // Dùng 'in' an toàn hơn so với '==' khi 'role' là một mảng.
+      allow write: if request.auth != null &&
+                      'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
-     match /security_tokens/{docId} {
+
+    // ====================================================================
+    // FEEDBACKS COLLECTION (THÊM MỚI)
+    // Cần có rule cho collection này để tránh bị spam ghi dữ liệu rác.
+    // ====================================================================
+    match /feedbacks/{feedbackId} {
+      // AI ĐƯỢC ĐỌC?
+      // Không ai từ client được đọc feedback của người khác.
+      allow read: if false;
+
+      // AI ĐƯỢC TẠO?
+      // Chỉ user đã đăng nhập mới được gửi feedback.
+      // Chúng ta cũng nên xác thực dữ liệu gửi lên (validation).
+      allow create: if request.auth != null &&
+                       request.resource.data.name is string &&
+                       request.resource.data.name.size() < 100 &&
+                       request.resource.data.message is string &&
+                       request.resource.data.message.size() < 1000 &&
+                       request.resource.data.rating is number &&
+                       request.resource.data.rating >= 1 &&
+                       request.resource.data.rating <= 5;
+
+      // AI ĐƯỢC SỬA/XÓA?
+      // Không ai được phép.
+      allow update, delete: if false;
+    }
+
+    // ====================================================================
+    // SECURITY TOKENS COLLECTION
+    // ====================================================================
+    match /security_tokens/{docId} {
+      // KHÓA HOÀN TOÀN
+      // Collection này chỉ được truy cập bởi server thông qua Admin SDK.
+      // Client không có bất kỳ quyền nào.
       allow read, write: if false;
-      }
+    }
   }
 }
