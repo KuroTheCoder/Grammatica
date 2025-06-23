@@ -231,7 +231,6 @@ const FeedbackModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => vo
     );
 };
 
-// ... (Other components remain the same) ...
 const FeedbackButton = () => { const [isModalOpen, setIsModalOpen] = useState(false); return ( <> <motion.button onClick={() => setIsModalOpen(true)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.5, ease: "easeOut" }} whileHover={{ scale: 1.1, filter: 'brightness(1.2)' }} whileTap={{ scale: 0.95 }} className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-800/60 backdrop-blur-md border border-white/10 shadow-lg" aria-label="Gửi feedback" title="Gửi Feedback"> <VscFeedback className="h-7 w-7 text-emerald-300" /> </motion.button> <FeedbackModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} /> </> ); };
 const ClientOnly = ({ children }: { children: React.ReactNode }) => { const [hasMounted, setHasMounted] = useState(false); useEffect(() => { setHasMounted(true) }, []); if (!hasMounted) return null; return <>{children}</>; };
 const containerVariants: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
@@ -247,7 +246,7 @@ const HowItWorksSection = () => { const steps = [ { title: "Đăng nhập", desc
 const Testimonials = () => { const testimonials = [ { name: "An Khang", title: "Sinh viên năm 2, ĐH Bách Khoa", quote: "AI của Grammatica chỉ ra lỗi sai ngữ pháp mà em không bao giờ nhận ra. Thực sự thay đổi cách em viết tiếng Anh.", avatarUrl: "/avatars/avatar-1.jpg" }, { name: "Minh Thư", title: "Sinh viên năm 3, ĐH Kinh tế Quốc dân", quote: "Giao diện đẹp, lộ trình học rõ ràng. Em không còn cảm thấy mông lung khi học ngoại ngữ nữa. Highly recommended!", avatarUrl: "/avatars/avatar-2.jpg" }, { name: "Bảo Ngọc", title: "Sinh viên năm nhất, ĐH Ngoại thương", quote: "Các bài học tương tác rất thú vị, không hề nhàm chán như em nghĩ. Em tiến bộ từng ngày.", avatarUrl: "/avatars/avatar-3.jpg" }, { name: "Gia Huy", title: "Lập trình viên, FPT Software", quote: "Dùng Grammatica để trau dồi kỹ năng viết email và tài liệu kỹ thuật. Rất hiệu quả và chuyên nghiệp.", avatarUrl: "/avatars/avatar-4.jpg" }, { name: "Quỳnh Anh", title: "Du học sinh, Úc", quote: "Là công cụ không thể thiếu giúp mình tự tin hơn khi viết luận và giao tiếp hàng ngày. Cảm ơn Grammatica!", avatarUrl: "/avatars/avatar-5.jpg" }, ]; const duplicatedTestimonials = [...testimonials, ...testimonials]; return ( <section className="relative py-20 lg:py-28"> <AnimatedSection className="w-full text-center relative z-10 px-4">
     <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-amber-300 via-yellow-100 to-amber-300 text-transparent bg-clip-text">Hành Trình Thành Công</motion.h2>
     <motion.p variants={itemVariants} className="text-slate-400 mb-16 max-w-2xl mx-auto">Nghe câu chuyện từ những người đã thay đổi hành trình chinh phục tiếng Anh cùng Grammatica.</motion.p> </AnimatedSection> <div className="group w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent_0,black_5%,black_95%,transparent_100%)]"> <div className="flex flex-nowrap gap-8 animate-marquee-slow group-hover:pause"> {duplicatedTestimonials.map((t, i) => ( <div key={i} className="flex-shrink-0 w-80 p-4"> <div className="group/card w-full h-full bg-slate-900/50 backdrop-blur-md border border-white/10 p-8 rounded-2xl flex flex-col items-center text-center transition-all duration-300 hover:border-emerald-400/50"> <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}> <Image src={t.avatarUrl} alt={t.name} width={64} height={64} className="w-16 h-16 rounded-full object-cover mb-4 border-2 border-slate-600" />
-    <p className="text-slate-300 italic h-24">"{t.quote}"</p>
+    <p className="text-slate-300 italic h-24">{`"${t.quote}"`}</p>
     <div className="mt-6 border-t border-white/10 w-1/3 mx-auto" /> <p className="mt-4 font-bold text-white">{t.name}</p> <p className="text-sm text-slate-400">{t.title}</p> </motion.div> </div> </div> ))} </div> </div> </section> ); };
 
 
@@ -320,11 +319,12 @@ export default function HomePage() {
                         Nền tảng học tập hiện đại dành riêng cho sinh viên, kết hợp <KeywordHighlight>bài học tương tác</KeywordHighlight> và <KeywordHighlight>công nghệ AI đột phá</KeywordHighlight>.
                     </motion.p>
                     <motion.div variants={itemVariants}>
-                        <Link href="/Login" legacyBehavior passHref>
-                            <motion.a className="group bg-[#FDE047] text-[#040D0A] font-bold py-3 px-8 rounded-full shadow-lg hover:bg-[#ffe97a] inline-flex items-center justify-center gap-2 text-lg" whileHover={{ scale: 1.05, boxShadow: "0px 0px 20px rgba(253, 224, 71, 0.4)" }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 300 }}>
+                        {/* FIX: Removed legacyBehavior prop */}
+                        <Link href="/Login">
+                            <motion.div className="group bg-[#FDE047] text-[#040D0A] font-bold py-3 px-8 rounded-full shadow-lg hover:bg-[#ffe97a] inline-flex items-center justify-center gap-2 text-lg cursor-pointer" whileHover={{ scale: 1.05, boxShadow: "0px 0px 20px rgba(253, 224, 71, 0.4)" }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 300 }}>
                                 Bắt đầu học ngay
                                 <FiLogIn className="h-5 w-5 transition-transform group-hover:translate-x-1"/>
-                            </motion.a>
+                            </motion.div>
                         </Link>
                     </motion.div>
                 </motion.div>
@@ -357,7 +357,8 @@ export default function HomePage() {
                         <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-purple-300 via-emerald-300 to-sky-300 text-transparent bg-clip-text">Sẵn sàng để nâng trình?</motion.h2>
                         <motion.p variants={itemVariants} className="text-slate-400 mb-8 max-w-xl mx-auto">Đăng nhập ngay để bắt đầu hành trình chinh phục ngoại ngữ của mình.</motion.p>
                         <motion.div variants={itemVariants}>
-                            <Link href="/Login" legacyBehavior passHref>
+                            {/* FIX: Removed legacyBehavior prop */}
+                            <Link href="/Login">
                                 <GlowingButton icon={FiLogIn} color="yellow">Đăng nhập ngay</GlowingButton>
                             </Link>
                         </motion.div>

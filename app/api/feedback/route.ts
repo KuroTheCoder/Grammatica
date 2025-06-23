@@ -1,54 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-// Đảm bảo bro đã có file .env.local với RESEND_API_KEY
+// Make sure the variable name here matches your .env.local file
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Email nhận feedback
-const TO_EMAIL = process.env.FEEDBACK_EMAIL || 'kurothecoder@gmail.com'; // <<< THAY BẰNG EMAIL CỦA BRO
+// IMPORTANT: Replace with your verified domain email and the destination email
+const FROM_EMAIL = 'onboarding@resend.dev'; // Use a verified Resend domain email
+const TO_EMAIL = 'kurothecoder@gmail.com';   // The email where you want to receive feedback
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
     try {
-        const { name, type, rating, message } = await req.json();
+        const body = await req.json();
+        const { name, type, rating, message } = body;
 
-        // Validation cơ bản
-        if (!name || !type || rating === undefined || !message) {
-            return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+        // --- Server-side validation ---
+        if (!name || !type || !rating || !message) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const subject = `[${type === 'suggestion' ? 'Góp ý' : 'Báo lỗi'} - ${rating} Sao] - Feedback từ Grammatica`;
+        if (!process.env.RESEND_API_KEY) {
+            console.error("RESEND_API_KEY is not set in environment variables.");
+            return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 });
+        }
 
-        // Định dạng email HTML đẹp mắt
-        const htmlBody = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2 style="color: #10B981;">New Feedback from Grammatica!</h2>
-        <p><strong>From:</strong> ${name}</p>
-        <p><strong>Type:</strong> ${type}</p>
-        <p><strong>Rating:</strong> ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</p>
-        <hr style="border: 0; border-top: 1px solid #eee;" />
-        <h3 style="color: #333;">Message:</h3>
-        <p style="background-color: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-          ${message}
-        </p>
-      </div>
-    `;
-
+        // --- Sending the email ---
         const { data, error } = await resend.emails.send({
-            from: 'Grammatica Feedback <onboarding@resend.dev>',
+            from: `Grammatica Feedback <${FROM_EMAIL}>`, // Sender display name and email
             to: [TO_EMAIL],
-            subject: subject,
-            html: htmlBody,
+            subject: `New Feedback from ${name}: ${type}`,
+            html: `
+        <div>
+          <h2>New Grammatica Feedback</h2>
+          <p><strong>From:</strong> ${name}</p>
+          <p><strong>Type:</strong> ${type}</p>
+          <p><strong>Rating:</strong> ${rating} / 5</p>
+          <hr />
+          <h3>Message:</h3>
+          <p>${message}</p>
+        </div>
+      `,
         });
 
+        // If Resend itself returns an error
         if (error) {
             console.error("Resend API Error:", error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            return NextResponse.json({ error: 'Failed to send email.' }, { status: 500 });
         }
 
         return NextResponse.json({ message: 'Feedback sent successfully!', data });
 
-    } catch (error) {
-        console.error("API Route Error:", error);
-        return NextResponse.json({ error: 'Something went wrong on the server' }, { status: 500 });
+    } catch (e) {
+        // Catch any other unexpected errors (e.g., JSON parsing failed)
+        const error = e as Error;
+        console.error("Internal Server Error:", error.message);
+        return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
     }
 }
