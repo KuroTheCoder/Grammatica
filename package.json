@@ -25,7 +25,9 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
-    "three": "^0.177.0"
+    "resend": "^4.6.0",
+    "three": "^0.177.0",
+    "vanta": "^0.5.24"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -34,6 +36,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.177.0",
     "@typescript-eslint/parser": "^8.34.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
