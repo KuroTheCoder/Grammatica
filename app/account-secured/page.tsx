@@ -1,8 +1,13 @@
 'use client';
 
-import Link from 'next/link';
+// LỖI 1: Xóa 'Link' vì không được sử dụng
+// import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FaCheckCircle, FaShieldAlt, FaKey } from 'react-icons/fa';
+
+// LỖI 2: Xóa 'FaShieldAlt' vì không được sử dụng
+// import { FaCheckCircle, FaShieldAlt, FaKey } from 'react-icons/fa';
+import { FaCheckCircle, FaKey } from 'react-icons/fa';
+
 
 const AccountSecuredPage = () => {
     const router = useRouter();
@@ -25,7 +30,7 @@ const AccountSecuredPage = () => {
                     Hành động tiếp theo quan trọng nhất: Hãy đổi mật khẩu ngay để ngăn chặn kẻ gian truy cập lại.
                 </p>
 
-                {/* Thay vì Link, dùng button để có thể chạy logic */}
+                {/* Dùng button với onClick là đúng cho trường hợp này */}
                 <button
                     onClick={handleLoginAndChangePassword}
                     className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3 px-6 font-bold text-base bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
