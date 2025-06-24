@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { FaUserShield, FaUserGraduate, FaUserTie, FaPen, FaSort, FaSortUp, FaSortDown, FaSearch, FaUser, FaEnvelope, FaUsers, FaClock, FaExclamationTriangle } from 'react-icons/fa';
+import { FaUserShield, FaUserGraduate, FaUserTie, FaSort, FaSortUp, FaSortDown, FaSearch, FaUser, FaEnvelope, FaUsers, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import EditUserModal from '@/components/admin/EditUserModal';
 import UserActionsButton from '@/components/admin/UserActionsMenu';
 import UserActionsModal from '@/components/admin/UserActionsModal';
-import { collection, doc, query, updateDoc, QueryDocumentSnapshot, DocumentData, Timestamp } from 'firebase/firestore';
+import { collection, doc, query, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useCollection } from 'react-firebase-hooks/firestore';
 

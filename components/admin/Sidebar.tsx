@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaTachometerAlt, FaBullhorn, FaUsers, FaBookOpen } from 'react-icons/fa';
+import { FaTachometerAlt, FaBullhorn, FaUsers } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 

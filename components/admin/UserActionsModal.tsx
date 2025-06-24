@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FaPen, FaLock, FaUserSlash, FaCheckCircle, FaTimes } from 'react-icons/fa';
+import { FaPen, FaLock, FaUserSlash, FaCheckCircle } from 'react-icons/fa';
 import { UserData } from '@/app/admin/users/page'; // Import the type
 
 type UserStatus = 'active' | 'locked' | 'banned';
