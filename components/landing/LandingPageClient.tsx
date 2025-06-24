@@ -29,8 +29,12 @@ import GlowingButton from "@/components/ui/GlowingButton";
 const InteractiveSpotlightBackground = dynamic(() => import('@/components/shared/InteractiveSpotlightBackground'), { ssr: false });
 const FeedbackButton = dynamic(() => import('@/components/shared/FeedbackButton'), { ssr: false });
 
+// This is the NEW CHANGE! We are now lazy-loading the canvas particle background too.
+const FloatingDustBackground = dynamic(() => Promise.resolve(FloatingDustBg), { ssr: false });
+
 // ============================================================================
-// Canvas Animation Logic (can stay here)
+// Canvas Animation Logic
+// We've moved the component itself down so `dynamic` can reference it.
 // ============================================================================
 
 class Particle {
@@ -89,7 +93,8 @@ function animateParticles(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasEleme
 // ALL HELPER COMPONENTS
 // ============================================================================
 
-const FloatingDustBackground = () => {
+// We rename the component slightly so `dynamic` can import it correctly from within the same file.
+const FloatingDustBg = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
