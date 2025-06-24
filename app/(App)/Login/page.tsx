@@ -7,12 +7,16 @@ import {AnimatePresence, motion, Variants} from 'framer-motion';
 import { FaBullhorn, FaChalkboardTeacher, FaGraduationCap, FaInfoCircle, FaLock, FaSyncAlt, FaUserAlt, FaUserGraduate, FaWrench } from 'react-icons/fa';
 import {FiLogIn} from "react-icons/fi";
 import Cookies from 'js-cookie';
+import dynamic from 'next/dynamic'; // <-- IMPORT DYNAMIC
 import {auth, db} from '@/lib/firebase';
 import {sendPasswordResetEmail, signInWithEmailAndPassword} from "firebase/auth";
 import {collection, doc, getDoc, limit, orderBy, query} from "firebase/firestore";
 import {useCollection} from 'react-firebase-hooks/firestore';
 import FeedbackButton from "@/components/shared/FeedbackButton";
-import InteractiveSpotlightBackground from "@/components/shared/InteractiveSpotlightBackground";
+
+// --- THIS IS THE FIX ---
+// Lazily load any component that uses browser-only APIs or is visually heavy
+const InteractiveSpotlightBackground = dynamic(() => import('@/components/shared/InteractiveSpotlightBackground'), { ssr: false });
 
 // ============================================================================
 // ALL COMPONENTS FOR THIS PAGE ARE DEFINED HERE
@@ -170,7 +174,6 @@ const LoginPage = () => {
                 throw new Error('wrong-role');
             }
 
-            // --- THIS IS THE SIMPLE SUCCESS LOGIC ---
             const token = await user.getIdToken();
             Cookies.set('auth-token', token, { expires: 1, path: '/' });
 
