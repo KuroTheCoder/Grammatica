@@ -1,11 +1,8 @@
-// file: app/(App)/Login/page.tsx
-
 "use client";
 
 // All imports are verified to be in use by the components and logic below.
 import Link from "next/link";
 import React, {FC, FormEvent, InputHTMLAttributes, useCallback, useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation';
 import {AnimatePresence, motion, Variants} from 'framer-motion';
 import { FaBullhorn, FaChalkboardTeacher, FaGraduationCap, FaInfoCircle, FaLock, FaSyncAlt, FaUserAlt, FaUserGraduate, FaWrench } from 'react-icons/fa';
 import {FiLogIn} from "react-icons/fi";
@@ -114,7 +111,6 @@ NoticeBoard.displayName = 'NoticeBoard';
 // THE MAIN PAGE COMPONENT
 // ============================================================================
 const LoginPage = () => {
-    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isTeacher, setIsTeacher] = useState(false);
@@ -143,8 +139,6 @@ const LoginPage = () => {
         }
     };
 
-    // Inside LoginPage.tsx
-
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         setFormError('');
@@ -164,8 +158,7 @@ const LoginPage = () => {
             const userDoc = await getDoc(doc(db, "users", user.uid));
 
             if (!userDoc.exists()) {
-                // Handle case where user exists in Auth but not Firestore
-                await auth.signOut(); // <-- FIX: Added await
+                await auth.signOut();
                 throw new Error('no-firestore-profile');
             }
 
@@ -173,27 +166,20 @@ const LoginPage = () => {
             const selectedRole = isTeacher ? 'teacher' : 'student';
 
             if (!Array.isArray(data.role) || !data.role.includes(selectedRole)) {
-                // Handle wrong role selection
-                await auth.signOut(); // <-- FIX: Added await
+                await auth.signOut();
                 throw new Error('wrong-role');
             }
 
-            // --- SUCCESS ---
+            // --- THIS IS THE SIMPLE SUCCESS LOGIC ---
             const token = await user.getIdToken();
             Cookies.set('auth-token', token, { expires: 1, path: '/' });
 
-            // This is a "fire-and-forget" call, so we don't need to await it.
-            fetch('/api/auth/send-login-notification', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({userId: user.uid, email: user.email}),
-            });
+            console.log("auth-token cookie set successfully on the client.");
 
-            router.replace('/Home');
+            const destination = selectedRole === 'teacher' ? '/admin' : '/Home';
+            window.location.assign(destination);
 
         } catch (error) {
-            // FIX: The linter warnings are fixed here.
-            // We log the real error for debugging, then show a user-friendly message.
             console.error(">>> LOGIN ERROR:", error);
 
             const getErrorCode = (err: unknown): string => {
@@ -221,7 +207,6 @@ const LoginPage = () => {
             }
             generateCaptcha();
             setCaptchaInput('');
-        } finally {
             setLoading(false);
         }
     };
