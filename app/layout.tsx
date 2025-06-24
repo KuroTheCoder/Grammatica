@@ -1,8 +1,9 @@
 // File: app/layout.tsx
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from "next";
 import { Inter } from "next/font/google"; // Hoặc font Geist của bạn
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +21,8 @@ export default function RootLayout({
         <html lang="vie" suppressHydrationWarning>
         {/* Body không có class style, để các layout con tự quyết định */}
         <body className={inter.className}>{children}</body>
+        <Analytics />
+        <SpeedInsights />
         </html>
     );
 }
