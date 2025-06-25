@@ -4,7 +4,7 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FaPen, FaLock, FaUserSlash, FaCheckCircle } from 'react-icons/fa';
-import { UserData } from '@/app/admin/users/page'; // Import the type
+import { UserData } from '@/app/(Admin)/admin/users/page'; // Import the type
 
 type UserStatus = 'active' | 'locked' | 'banned';
 
