@@ -1,32 +1,39 @@
+/* File: app/globals.css (THE NEW, FIXED VERSION) */
+
 @import "tailwindcss";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
 :root {
-    --background: #ffffff;
-    --foreground: #171717;
+    --background: #0a0a0a;
+    --foreground: #ededed;
+
+    /* --- THE FIX IS HERE --- */
+    /* We are defining the color variables that the noise effect needs. */
+    /* These are HSL Hue values. 160 is a nice teal, 50 is a gold/yellow. */
+    --color-a: 160;
+    --color-b: 50;
 }
 
+/* This @theme block is not standard CSS/Tailwind, so let's remove it for now */
+/* It seems to be from a specific template and might be causing conflicts. */
+/*
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
-    --font-sans: var(--font-geist-sans);
+    --font-sans: var(--font-geist-sans); <-- This was the source of the font error
     --font-mono: var(--font-geist-mono);
 }
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
-}
+*/
 
 body {
-    background: var(--background);
+    background-color: var(--background);
     color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    /* --- AND THE FIX IS HERE --- */
+    /* We directly use the --font-inter variable created by next/font in our layout.tsx */
+    font-family: var(--font-inter), sans-serif;
 }
-/* Paste at the end of app/globals.css */
 
+/* The rest of your styles are perfect, no changes needed here */
 @keyframes animate-noise {
     0%, 100% {
         background-position: 0 0;
@@ -42,11 +49,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    border-radius: inherit; /* Thừa hưởng bo góc từ thẻ cha */
-}
-
-/* Dùng mask để tạo viền mờ cho hiệu ứng */
-.noise-container {
+    border-radius: inherit;
     mask-image: radial-gradient(300px at center, white, transparent);
     -webkit-mask-image: radial-gradient(300px at center, white, transparent);
 }
@@ -92,4 +95,12 @@ body {
     margin: 8px 0;
     width: 100%;
     border-radius: 5px;
+}
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
