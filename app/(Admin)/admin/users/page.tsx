@@ -1,4 +1,4 @@
-// app/(admin)/admin/users/page.tsx (The Fully-Loaded, Optimized Masterpiece)
+// app/(Admin)/admin/users/page.tsx (Final Version with Themed Confirmation Modal)
 "use client";
 
 import React, {useState, useMemo, useEffect} from 'react';
@@ -37,13 +37,14 @@ import {
 } from 'firebase/firestore';
 import {db} from '@/lib/firebase';
 import {useDebounce} from '@/hooks/useDebounce';
-
-// ===== Dynamic Imports for Performance =====
 import dynamic from 'next/dynamic';
 
+// ===== Dynamic Imports for Performance =====
+import type { ModalIntent } from '@/components/admin/ConfirmActionModal'; // === THEME UPDATE: Import the type ===
 const EditUserModal = dynamic(() => import('@/components/admin/EditUserModal'));
 const UserActionsModal = dynamic(() => import('@/components/admin/UserActionsModal'));
 const UserActionsButton = dynamic(() => import('@/components/admin/UserActionsMenu'));
+const ConfirmActionModal = dynamic(() => import('@/components/admin/ConfirmActionModal'));
 // ===========================================
 
 export type UserStatus = 'active' | 'locked' | 'banned';
@@ -59,12 +60,12 @@ export interface UserData {
 }
 
 type SortableKeys = 'displayName' | 'email' | 'class' | 'created';
-type SortConfig = { key: SortableKeys; direction: 'asc' | 'desc'; }; // FIX: Using 'asc'/'desc' for Firebase
+type SortConfig = { key: SortableKeys; direction: 'asc' | 'desc'; };
 
 const ROLES_FILTER = ['student', 'teacher', 'admin'];
 
 // ====================================================================
-// ===== STYLING HELPERS (Your awesome system, untouched) =====
+// ===== STYLING HELPERS (Untouched) =====
 // ====================================================================
 const GRADE_PALETTES: { [key: string]: { bg: string, text: string, border: string }[] } = {
     '10': [{bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30'}, {
@@ -93,12 +94,9 @@ const simpleHash = (str: string): number => {
     }
     return Math.abs(hash);
 };
-// Find and replace this function in your page.tsx
-
 const getGradeFromClassName = (className: string): string => {
     if (!className) return 'default';
     const upperClassName = className.toUpperCase();
-    // This logic is more robust for different class naming conventions. Ngon lành!
     if (upperClassName.startsWith('10') || upperClassName.includes('A')) return '10';
     if (upperClassName.startsWith('11') || upperClassName.includes('B')) return '11';
     if (upperClassName.startsWith('12') || upperClassName.includes('C')) return '12';
@@ -146,50 +144,56 @@ const getRowStyle = (statusType: UserStatus | undefined) => {
 };
 // ====================================================================
 
-const USERS_PER_PAGE = 25; // How many users per page
+const USERS_PER_PAGE = 25;
 
 const UserManagementPage = () => {
     const [users, setUsers] = useState<UserData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
-
-    // State for pagination
     const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
     const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
     const [isLastPage, setIsLastPage] = useState(false);
     const [page, setPage] = useState(1);
-
-    // State for Modals
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
     const [selectedUserForAction, setSelectedUserForAction] = useState<UserData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isConfirming, setIsConfirming] = useState(false);
 
-    // State for Filters and Sorting
+    // === THEME UPDATE: Add `intent` to the modal state ===
+    const [confirmModalState, setConfirmModalState] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: React.ReactNode;
+        onConfirm: () => void;
+        intent: ModalIntent;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        intent: 'danger',
+    });
+
     const [sortConfig, setSortConfig] = useState<SortConfig>({key: 'displayName', direction: 'asc'});
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
     const [selectedRole, setSelectedRole] = useState('');
     const [selectedGrade, setSelectedGrade] = useState('');
     const [selectedClass, setSelectedClass] = useState('');
-
-    // State for filter dropdown options
     const [availableClasses, setAvailableClasses] = useState<string[]>([]);
     const [availableGrades, setAvailableGrades] = useState<string[]>([]);
     const [groupedClasses, setGroupedClasses] = useState<{ [key: string]: string[] }>({});
 
-    // One-time fetch for filter dropdown options
     useEffect(() => {
         const fetchFilterOptions = async () => {
             const q = query(collection(db, 'users'));
             const userSnapshot = await getDocs(q);
-
             const classSet = new Set<string>();
             userSnapshot.docs.forEach(doc => doc.data().class && classSet.add(doc.data().class));
             const classes = Array.from(classSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
             setAvailableClasses(classes);
-
             const gradeSet = new Set<string>();
             classes.forEach(c => {
                 const gradeKey = getGradeFromClassName(c);
@@ -197,7 +201,6 @@ const UserManagementPage = () => {
             });
             const grades = Array.from(gradeSet).sort();
             setAvailableGrades(grades);
-
             const groups: { [key: string]: string[] } = {};
             grades.forEach(grade => {
                 groups[`Grade ${grade}`] = classes.filter(c => getGradeFromClassName(c) === grade);
@@ -207,13 +210,12 @@ const UserManagementPage = () => {
         fetchFilterOptions();
     }, []);
 
-    // Main data fetching function
     const fetchUsers = async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+        // ... fetchUsers logic (unchanged)
         setLoading(true);
         setError(null);
         try {
             let q = query(collection(db, 'users'));
-
             if (selectedClass) {
                 q = query(q, where('class', '==', selectedClass));
             } else if (selectedGrade) {
@@ -225,33 +227,26 @@ const UserManagementPage = () => {
             if (selectedRole) {
                 q = query(q, where('role', 'array-contains', selectedRole));
             }
-
             q = query(q, orderBy(sortConfig.key, sortConfig.direction));
-
             if (direction === 'next' && lastDoc) {
                 q = query(q, startAfter(lastDoc));
             } else if (direction === 'prev' && firstDoc) {
                 q = query(q, endBefore(firstDoc), limitToLast(USERS_PER_PAGE));
             }
-
             q = query(q, limit(USERS_PER_PAGE));
-
             const documentSnapshots = await getDocs(q);
             const fetchedUsers = documentSnapshots.docs.map(doc => ({uid: doc.id, ...doc.data()} as UserData));
-
             setUsers(fetchedUsers);
             if (documentSnapshots.docs.length > 0) {
                 setFirstDoc(documentSnapshots.docs[0]);
                 setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
             }
             setIsLastPage(documentSnapshots.docs.length < USERS_PER_PAGE);
-        } catch (err: unknown) { // Step 1: Use 'unknown' instead of 'any'
+        } catch (err: unknown) {
             console.error("Firebase Query Error:", err);
-            // Step 2: Check if the error is actually an Error object
             if (err instanceof Error) {
                 setError(err);
             } else {
-                // If it's something else (like a string), create a new Error
                 setError(new Error('An unknown error occurred.'));
             }
         } finally {
@@ -259,7 +254,6 @@ const UserManagementPage = () => {
         }
     };
 
-    // Refetch when filters or sorting change
     useEffect(() => {
         setPage(1);
         setLastDoc(null);
@@ -281,14 +275,12 @@ const UserManagementPage = () => {
         }
     };
 
-    // Client-side search on the current page of users
     const processedUsers = useMemo(() => {
         const term = debouncedSearchTerm.toLowerCase();
         if (!term) return users;
         return users.filter(user => (user.displayName || '').toLowerCase().includes(term) || (user.email || '').toLowerCase().includes(term));
     }, [users, debouncedSearchTerm]);
 
-    // Handler Functions
     const requestSort = (key: SortableKeys) => {
         setSortConfig(current => ({
             key,
@@ -329,22 +321,52 @@ const UserManagementPage = () => {
         setIsActionsModalOpen(false);
         setTimeout(() => setSelectedUserForAction(null), 300);
     };
-    const handleStatusChange = async (uid: string, statusType: UserStatus, reason?: string) => {
-        const confirmText = `Are you sure you want to ${statusType.toUpperCase()} this user?`;
-        if (window.confirm(confirmText)) {
+
+    // === THEME UPDATE: Final version of the function with intent logic ===
+    const handleStatusChange = (uid: string, statusType: UserStatus, reason?: string) => {
+        const getIntentForStatus = (status: UserStatus): ModalIntent => {
+            if (status === 'banned') return 'danger';
+            if (status === 'locked') return 'warning';
+            return 'success'; // for 'active'
+        };
+
+        const intent = getIntentForStatus(statusType);
+
+        const performAction = async () => {
+            setIsConfirming(true);
             try {
-                await updateDoc(doc(db, 'users', uid), {status: {type: statusType, reason: reason || ''}});
-                const updatedUsers = users.map(u => u.uid === uid ? {...u, status: {type: statusType}} : u);
+                await updateDoc(doc(db, 'users', uid), { status: { type: statusType, reason: reason || '' } });
+                const updatedUsers = users.map(u => u.uid === uid ? { ...u, status: { type: statusType, reason } } : u);
                 setUsers(updatedUsers);
+                handleCloseActionsModal();
+                setConfirmModalState(s => ({ ...s, isOpen: false }));
             } catch (err) {
                 console.error("Failed to update user status:", err);
+            } finally {
+                setIsConfirming(false);
             }
-        }
+        };
+
+        const verb = statusType === 'active' ? 'reactivate' : statusType;
+
+        setConfirmModalState({
+            isOpen: true,
+            title: `Confirm User ${verb.charAt(0).toUpperCase() + verb.slice(1)}`,
+            message: (
+                <>
+                    Are you sure you want to <strong>{verb}</strong> this user?
+                    This action will take effect immediately.
+                </>
+            ),
+            onConfirm: performAction,
+            intent: intent,
+        });
     };
 
     return (
         <>
             <div className="max-w-7xl mx-auto">
+                {/* ... your h1 and filter inputs (unchanged) ... */}
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400 mb-6">User
                     Management</h1>
 
@@ -388,6 +410,7 @@ const UserManagementPage = () => {
 
                 <div className="bg-slate-900/50 rounded-lg border border-slate-800 overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-800">
+                        {/* ... your table head (unchanged) ... */}
                         <thead className="bg-slate-800/50">
                         <tr>
                             <th className="px-6 py-4 text-left whitespace-nowrap">
@@ -431,12 +454,13 @@ const UserManagementPage = () => {
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800">
+                        {/* ... your table body rendering logic (unchanged) ... */}
                         {loading && <tr>
                             <td colSpan={6} className="text-center p-8 text-slate-400">Loading Users...</td>
                         </tr>}
                         {error && <tr className="bg-red-900/20">
                             <td colSpan={6} className="text-center p-8 text-red-300 font-mono">Error: {error.message}
-                                <br/> <span className="text-xs text-red-400">(Check console for details and a link to create the required Firestore index!)</span>
+                                <br/> <span className="text-xs text-red-400">(Check console for details)</span>
                             </td>
                         </tr>}
                         {!loading && processedUsers.length === 0 && (<tr>
@@ -463,6 +487,7 @@ const UserManagementPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between mt-6">
+                    {/* ... your pagination controls (unchanged) ... */}
                     <button onClick={goToPrevPage} disabled={page <= 1}
                             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded-md hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <FaChevronLeft/> Previous
@@ -479,6 +504,18 @@ const UserManagementPage = () => {
             <UserActionsModal isOpen={isActionsModalOpen} onClose={handleCloseActionsModal} user={selectedUserForAction}
                               onEdit={() => selectedUserForAction && handleOpenEditModal(selectedUserForAction)}
                               onStatusChange={(uid, status) => selectedUserForAction && handleStatusChange(uid, status)}/>
+
+            {/* === THEME UPDATE: Pass the intent to the rendered modal === */}
+            <ConfirmActionModal
+                isOpen={confirmModalState.isOpen}
+                onClose={() => setConfirmModalState(s => ({...s, isOpen: false}))}
+                onConfirm={confirmModalState.onConfirm}
+                title={confirmModalState.title}
+                message={confirmModalState.message}
+                isConfirming={isConfirming}
+                confirmText={`Yes, proceed`}
+                intent={confirmModalState.intent}
+            />
         </>
     );
 };
