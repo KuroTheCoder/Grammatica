@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
     const authToken = request.cookies.get('auth-token')?.value;
     const { pathname } = request.nextUrl;
 
-    const protectedRoutes = ['/Home', '/admin'];
+    const protectedRoutes = ['/dashboard', '/admin'];
 
     // If trying to access a protected route WITHOUT a token, redirect to Login
     if (protectedRoutes.some(path => pathname.startsWith(path)) && !authToken) {
@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
     // If ALREADY logged in and trying to access Login page, redirect to Home
     if (pathname.startsWith('/Login') && authToken) {
         const url = request.nextUrl.clone();
-        url.pathname = '/Home';
+        url.pathname = '/dashboard';
         return NextResponse.redirect(url);
     }
 

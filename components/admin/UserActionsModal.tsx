@@ -4,9 +4,9 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FaPen, FaLock, FaUserSlash, FaCheckCircle } from 'react-icons/fa';
-import { UserData } from '@/app/(Admin)/admin/users/page'; // Import the type
+// NEW, LEGENDARY PATH
+import type { UserData, UserStatus } from '@/types/user';
 
-type UserStatus = 'active' | 'locked' | 'banned';
 
 interface UserActionsModalProps {
     isOpen: boolean;
