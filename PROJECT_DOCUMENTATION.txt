@@ -3,10 +3,10 @@ Grammatica Project Documentation
 1. Tech Stack Summary:
 - Framework: Next.js 15.3.4
 - Language: TypeScript 5.8.3
-- UI Library: React 19.0.0, Tailwind CSS 4.1.10, framer-motion 12.18.1, react-icons 5.5.0, lucide-react 0.522.0, @headlessui/react 2.2.4
-- State & Hooks: react-firebase-hooks 5.1.1, react-intersection-observer 9.16.0
+- UI Library: React 19.0.0, Tailwind CSS 4.1.10, framer-motion, react-icons, lucide-react, @headlessui/react
+- State & Hooks: react-firebase-hooks, react-intersection-observer
 - Backend & Services: Firebase (firebase 11.9.1, firebase-admin 13.4.0), Vercel integrations (@vercel/analytics 1.5.0, @vercel/kv 3.0.0, @vercel/speed-insights 1.2.0)
-- Email: nodemailer 7.0.3, react-email 4.0.16, resend 4.6.0, @react-email/components 0.1.0
+- Email: nodemailer 7.0.3, react-email 4.0.16, resend 4.6.0
 - 3D & Animation: three.js 0.177.0, @react-three/fiber 9.1.2, @react-three/drei 10.3.0, maath 0.10.8, vanta 0.5.24, motion 12.18.1
 - Utilities: js-cookie 3.0.5, @upstash/ratelimit 2.0.5, tsparticles (@tsparticles/react 3.0.0, @tsparticles/slim 3.8.1)
 - Icons: @fortawesome/fontawesome-free 6.7.2
@@ -68,29 +68,43 @@ Grammatica Project Documentation
     - Sidebar.tsx : Admin sidebar navigation component.
     - UserActionsMenu.tsx : Button with ellipsis icon to open user actions modal.
     - UserActionsModal.tsx : Modal for user actions like edit role, lock, ban, activate.
-/components/landing
-  - AnimatedCTAButton.tsx : Animated call-to-action button.
-  - ClientNav.tsx : Client-side navigation component.
-  - HeroAnimation.tsx : Hero section animation component.
-  - LandingFooter.tsx : Footer component for landing page.
-  - LandingHelpers.tsx : Helper components for landing page.
-  - LandingPageClient.tsx : Client-side landing page component.
-  /sections
-    - HowItWorksSection.tsx : Section explaining how the app works.
-    - TestimonialsSection.tsx : Testimonials section component.
-
-/components/shared
-  - FeedbackButton.tsx : Button to open feedback modal.
-  - FeedbackModal.tsx : Modal for submitting feedback.
-  - FloatingDustBackground.tsx : Background animation component.
-  - InteractiveSpotlightBackground.tsx : Interactive background component.
-  - WebVitals.tsx : Web vitals reporting component.
-
-/components/ui
-  - AuroraButton.tsx : Styled button component.
-  - GlowingButton.tsx : Glowing button component.
-  - PrimaryCTAButton.tsx : Primary call-to-action button.
-  - PulseLoader.tsx : Loading spinner animation using framer-motion.
+  /dashboard
+    - DynamicDock.tsx : Dashboard dynamic dock component.
+    - GoalsWidget.tsx : Widget for goals display.
+    - ProfileCard.tsx : User profile card component.
+    - ProfileEditorModal.tsx : Modal to edit user profile.
+    - QuickAccessWidget.tsx : Quick access widget component.
+    - SkillBar.tsx : Skill bar visualization component.
+    - StudentSidebar.tsx : Sidebar for student dashboard.
+  /landing
+    - AnimatedCTAButton.tsx : Animated call-to-action button.
+    - ClientNav.tsx : Client-side navigation component.
+    - HeroAnimation.tsx : Hero section animation component.
+    - LandingFooter.tsx : Footer component for landing page.
+    - LandingHelpers.tsx : Helper components for landing page.
+    - LandingPageClient.tsx : Client-side landing page component.
+    /sections
+      - HowItWorksSection.tsx : Section explaining how the app works.
+      - TestimonialsSection.tsx : Testimonials section component.
+  /modals
+    - AvatarModal.tsx : Modal for avatar selection.
+    - BadgeModal.tsx : Modal for badge display.
+    - MasteryModal.tsx : Modal for mastery details.
+    - StatusModal.tsx : Modal for status updates.
+    - StreakModal.tsx : Modal for streak information.
+  /shared
+    - FeedbackButton.tsx : Button to open feedback modal.
+    - FeedbackModal.tsx : Modal for submitting feedback.
+    - FloatingDustBackground.tsx : Background animation component.
+    - InteractiveSpotlightBackground.tsx : Interactive background component.
+    - Modal.tsx : Generic modal component.
+    - WebVitals.tsx : Web vitals reporting component.
+    - WidgetCard.tsx : Widget card component.
+  /ui
+    - AuroraButton.tsx : Styled button component.
+    - GlowingButton.tsx : Glowing button component.
+    - PrimaryCTAButton.tsx : Primary call-to-action button.
+    - PulseLoader.tsx : Loading spinner animation using framer-motion.
 
 /emails
   - FeedbackEmail.tsx : Email template for feedback emails.
@@ -104,8 +118,9 @@ Grammatica Project Documentation
   - email-service.ts : Email sending service.
   - firebase-admin.ts : Firebase admin SDK initialization.
   - firebase.ts : Firebase app initialization and exports (app, auth, db).
+  - theme.ts : Theme configuration file.
 
-/public
+ /public
   /avatars
     - avatar-1.jpg
     - avatar-2.jpg
@@ -133,3 +148,8 @@ Grammatica Project Documentation
 - postcss.config.mjs : PostCSS configuration
 - eslint.config.mjs : ESLint configuration
 - vite.config.ts : Vite configuration
+
+5. Summary:
+This project is a Next.js app using TypeScript and Tailwind CSS, integrated with Firebase for authentication and Firestore for data storage. It features an admin panel with user management capabilities including role editing and status management. The UI uses framer-motion for animations and react-icons for icons. The project also includes email sending capabilities and various utility hooks and components.
+
+This documentation is intended to help AI systems and developers understand the project structure, dependencies, and file purposes for further development or analysis.

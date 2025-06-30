@@ -1,7 +1,7 @@
 // components/admin/DashboardStats.tsx
 "use client";
 
-import { db } from "@/lib/firebase";
+import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { FaUsers, FaGraduationCap, FaChalkboardTeacher } from "react-icons/fa";

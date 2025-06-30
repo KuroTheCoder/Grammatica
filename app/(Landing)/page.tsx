@@ -43,7 +43,7 @@ export default function HomePage() {
         <div className="w-full bg-transparent text-white relative isolate overflow-x-hidden">
             {pageHasMounted && (
                 <>
-                    <InteractiveSpotlightBackground isTeacher={false}/>
+                    <InteractiveSpotlightBackground variant="landing"/>
                     <FloatingDustBackground/>
                 </>
             )}

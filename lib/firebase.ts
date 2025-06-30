@@ -1,7 +1,6 @@
-// lib/firebase.ts
-import {getApp, getApps, initializeApp} from "firebase/app";
-import {getAuth} from "firebase/auth";
-import {getFirestore} from "firebase/firestore";
+import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -12,12 +11,14 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
-// Xuất ra các service để dùng trong ứng dụng
+// --- THE LEGENDARY SINGLETON PATTERN ---
 
-// Khởi tạo app nếu chưa tồn tại
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-// Tạo các dịch vụ cần dùng
-const auth = getAuth(app);
+// Forge the Firebase App instance. This logic runs ONCE when the module is first loaded.
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export {app, auth, db};
+// Forge the master keys for Auth and Firestore from the single app instance.
+const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
+
+// Export the master keys directly. No more functions. No more photocopies.
+export { app, auth, db };

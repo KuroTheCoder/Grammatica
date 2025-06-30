@@ -1,82 +1,137 @@
-// components/modals/MasteryModal.tsx
+// app/components/modals/MasteryModal.tsx
 "use client";
 
 import React from 'react';
 import Modal from '@/components/shared/Modal';
-import {motion} from 'framer-motion';
-import {CheckCircle, GitCommitHorizontal} from 'lucide-react';
-// IMPORTING our new color engine and level data!
-import {getColorForMastery, masteryLevels} from '@/lib/theme';
+import { motion, AnimatePresence } from 'framer-motion';
+import MasteryLevelItem from './MasteryLevelItem';
+import { Star, Sprout, Shield, Flame } from 'lucide-react'; // Our new icons!
+import { getColorForMastery, masteryLevels, MasteryLevel } from '@/lib/theme';
 
 interface MasteryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    currentMastery: string;
+    currentMastery: string | null | undefined;
 }
 
-const levelDescriptions: { [key: string]: string } = {
-    'A1': 'Beginner',
-    'A2': 'Elementary',
-    'B1': 'Intermediate',
-    'B2': 'Upper-Intermediate',
-    'C1': 'Advanced',
-    'C2': 'Mastery'
+const levelDescriptions: { [key: string]: { title: string, description:string } } = {
+    'A1': { title: 'Beginner', description: "You've taken your first step into a larger world." },
+    'A2': { title: 'Elementary', description: 'Building the foundation, one block at a time.' },
+    'B1': { title: 'Intermediate', description: 'You can now hold your own in conversation.' },
+    'B2': { title: 'Upper-Intermediate', description: 'Complex topics are within your grasp.' },
+    'C1': { title: 'Advanced', description: 'You navigate the language with fluency and nuance.' },
+    'C2': { title: 'Mastery', description: 'The language is now a part of you. True mastery achieved.' }
 };
 
-const MasteryModal: React.FC<MasteryModalProps> = ({isOpen, onClose, currentMastery}) => {
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title="The Mastery Tree">
-            <div className="flex flex-col items-center text-center">
-                <p className="mb-6 text-gray-300">Your journey through the forest of knowledge. Each level unlocks new
-                    abilities.</p>
+const textVariants = {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.15 } }
+} as const;
 
-                <div className="w-full flex flex-col">
-                    {masteryLevels.slice().reverse().map((level, index) => { // Reverse to show C2 at the top
-                        const isCurrent = level === currentMastery;
-                        const isPassed = masteryLevels.indexOf(currentMastery) >= masteryLevels.indexOf(level);
-                        const dynamicColor = getColorForMastery(level);
+// Helper function to get the right icon for the mastery stage. SO CLEAN.
+const getMasteryIcon = (level: MasteryLevel) => {
+    if (level.startsWith('A')) return Sprout;
+    if (level.startsWith('B')) return Shield;
+    if (level.startsWith('C')) return Flame;
+    return Star;
+};
+
+const MasteryModal: React.FC<MasteryModalProps> = ({ isOpen, onClose, currentMastery }) => {
+    const cleanedMastery = currentMastery?.trim().toUpperCase();
+    const normalizedCurrentMastery = (cleanedMastery && masteryLevels.includes(cleanedMastery as MasteryLevel))
+        ? cleanedMastery as MasteryLevel
+        : 'A1';
+
+    const currentLevelIndex = masteryLevels.indexOf(normalizedCurrentMastery);
+    const [hoveredLevel, setHoveredLevel] = React.useState<string | null>(null);
+
+    const displayKey = (hoveredLevel || normalizedCurrentMastery) as MasteryLevel;
+    const displayInfo = levelDescriptions[displayKey];
+    const displayColor = getColorForMastery(displayKey);
+    const DisplayIcon = getMasteryIcon(displayKey);
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Your Mastery Journey" titleIcon={Star}>
+            <div className="flex flex-col items-center w-full p-8 gap-8">
+                {/* === THE COMMAND CENTER WITH THEMATIC ICONS === */}
+                <div className="w-full text-center min-h-[80px]">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={displayKey}
+                            variants={textVariants}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            className="flex flex-col items-center justify-center gap-3"
+                        >
+                            <DisplayIcon
+                                className="w-10 h-10"
+                                style={{ color: displayColor, filter: `drop-shadow(0 0 10px ${displayColor})` }}
+                            />
+                            <h3 className="text-2xl font-bold" style={{ color: displayColor }}>
+                                {displayInfo.title}
+                            </h3>
+                            <p className="text-gray-300 -mt-2 max-w-md mx-auto">
+                                {displayInfo.description}
+                            </p>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+                {/* === THE Z-INDEX FIX IS HERE! === */}
+                {/* By adding 'relative' and 'z-10', we lift this entire container ABOVE the progress bar */}
+                <div
+                    onMouseLeave={() => setHoveredLevel(null)}
+                    className="relative z-10 flex justify-around items-center w-full max-w-3xl min-h-[10rem]"
+                >
+                    {masteryLevels.map((level, index) => {
+                        const isPassed = index < currentLevelIndex;
+                        const isCurrent = index === currentLevelIndex;
+                        const isFuture = index > currentLevelIndex;
+                        const isInitiallyExpanded = isCurrent && hoveredLevel === null;
 
                         return (
-                            <motion.div
+                            <MasteryLevelItem
                                 key={level}
-                                initial={{opacity: 0, x: -20}}
-                                animate={{
-                                    opacity: 1,
-                                    x: 0,
-                                    transition: {type: 'spring', delay: index * 0.1, stiffness: 300, damping: 20}
-                                }}
-                                className="relative flex items-center my-2 pl-8" // Indentation for the tree structure
-                            >
-                                {/* Connector Line & Node */}
-                                <div className="absolute left-0 top-0 h-full flex items-center">
-                                    <div className="h-full w-1"
-                                         style={{background: isPassed ? dynamicColor : '#4B5563'}}/>
-                                    <GitCommitHorizontal size={24}
-                                                         className="absolute left-[-12px] top-1/2 -translate-y-1/2 bg-gray-900 rounded-full"
-                                                         style={{color: dynamicColor}}/>
-                                </div>
-
-                                <div
-                                    className={`flex items-center p-3 rounded-lg border w-full transition-all duration-300 ${isPassed ? 'opacity-100' : 'opacity-40'}`}
-                                    style={{
-                                        borderColor: isCurrent ? dynamicColor : 'transparent',
-                                        background: isCurrent ? `rgba(255, 255, 255, 0.1)` : 'transparent'
-                                    }}
-                                >
-                                    <div
-                                        className="flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center"
-                                        style={{borderColor: dynamicColor}}>
-                                        <span className="font-black text-xl"
-                                              style={{color: dynamicColor}}>{level}</span>
-                                    </div>
-                                    <div className="ml-4 text-left">
-                                        <h3 className="font-bold text-lg text-white">{levelDescriptions[level]}</h3>
-                                    </div>
-                                    {isPassed && <CheckCircle size={20} className="ml-auto text-green-400"/>}
-                                </div>
-                            </motion.div>
+                                level={level}
+                                isPassed={isPassed}
+                                isCurrent={isCurrent}
+                                isFuture={isFuture}
+                                baseColor={getColorForMastery(level)}
+                                isHovered={hoveredLevel === level}
+                                isInitiallyExpanded={isInitiallyExpanded}
+                                onHoverStart={() => setHoveredLevel(level)}
+                                onHoverEnd={() => setHoveredLevel(null)}
+                            />
                         );
                     })}
+                </div>
+                <div className="w-full max-w-3xl h-3 bg-gray-800 rounded-full relative mt-4 shadow-inner">
+                    <div className="absolute -bottom-8 w-full flex justify-between px-1">
+                        <span className="text-sm font-semibold text-gray-400 w-10 text-center">A1</span>
+                        <span className="text-sm font-semibold text-gray-400 w-10 text-center">A2</span>
+                        <span className="text-sm font-semibold text-gray-400 w-10 text-center">B1</span>
+                        <span className="text-sm font-semibold text-gray-400 w-10 text-center">B2</span>
+                        <span className="text-sm font-semibold text-gray-400 w-10 text-center">C1</span>
+                        <span className="text-sm font-semibold text-gray-400 w-10 text-center">C2</span>
+                    </div>
+                    <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: 'linear-gradient(to right, #34D399, #60A5FA, #FBBF24, #A78BFA, #F472B6)' }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(currentLevelIndex / (masteryLevels.length - 1)) * 100}%` }}
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                    />
+                    <motion.div
+                        className="absolute top-1/2 -ml-2 w-5 h-5 rounded-full border-2 border-white bg-white shadow-lg"
+                        style={{
+                            background: getColorForMastery(normalizedCurrentMastery),
+                            boxShadow: `0 0 10px ${getColorForMastery(normalizedCurrentMastery)}`,
+                        }}
+                        initial={{ left: '0%', y: '-50%' }}
+                        animate={{ left: `${(currentLevelIndex / (masteryLevels.length - 1)) * 100}%` }}
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                    />
                 </div>
             </div>
         </Modal>

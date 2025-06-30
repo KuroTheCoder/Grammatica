@@ -1,35 +1,16 @@
-// app/(Admin)/admin/users/page.tsx (Final, Refactored & Cleaned)
 "use client";
 
 import React, { useState } from 'react';
 import {
-    FaChevronLeft,
-    FaChevronRight,
-    FaClock,
-    FaEnvelope,
-    FaExclamationTriangle,
-    FaSearch,
-    FaSort,
-    FaSortDown,
-    FaSortUp,
-    FaUser,
-    FaUserGraduate,
-    FaUsers,
-    FaUserShield,
-    FaUserTie
+    FaClock, FaEnvelope, FaExclamationTriangle,
+    FaSearch, FaSort, FaSortDown, FaSortUp, FaUser, FaUserGraduate, FaUsers, FaUserShield, FaUserTie
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import dynamic from 'next/dynamic';
-
-// ===== OUR LEGENDARY HOOK =====
 import { useUserManagement } from '@/hooks/useUserManagement';
-
-// ===== OUR CENTRAL BLUEPRINT OFFICE =====
 import type { UserData, UserStatus, SortableKeys } from '@/types/user';
-
-// ===== DYNAMIC IMPORTS FOR MODALS =====
 import type { ModalIntent } from '@/components/admin/ConfirmActionModal';
 const EditUserModal = dynamic(() => import('@/components/admin/EditUserModal'));
 const UserActionsModal = dynamic(() => import('@/components/admin/UserActionsModal'));
@@ -38,9 +19,7 @@ const ConfirmActionModal = dynamic(() => import('@/components/admin/ConfirmActio
 
 const ROLES_FILTER = ['student', 'teacher', 'admin'];
 
-// ====================================================================
-// ===== STYLING HELPERS (These are fine here, they are pure UI functions) =====
-// ====================================================================
+// Styling helpers remain unchanged...
 const GRADE_PALETTES: { [key: string]: { bg: string, text: string, border: string }[] } = {
     '10': [{bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30'}, {
         bg: 'bg-green-500/20',
@@ -108,19 +87,18 @@ const getRowStyle = (statusType: UserStatus | undefined) => {
         default: return 'hover:bg-slate-800/60';
     }
 };
-// ====================================================================
 
 const UserManagementPage = () => {
-    // Look how clean this is! All the logic comes from one place.
+    // ===== THE FIX: De-structure only what the hook exports NOW =====
     const {
-        loading, error, page, isLastPage, sortConfig, searchTerm,
+        loading, error, sortConfig, searchTerm,
         selectedRole, selectedGrade, selectedClass, availableClasses,
-        availableGrades, groupedClasses, processedUsers, setUsers,
+        availableGrades, groupedClasses, processedUsers, // No more pagination or setUsers!
         setSearchTerm, setSelectedRole, setSelectedGrade, setSelectedClass,
-        goToNextPage, goToPrevPage, requestSort,
+        requestSort,
     } = useUserManagement();
 
-    // Modal state remains here because it's a UI concern of THIS page.
+    // Modal state is still perfect.
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
@@ -132,6 +110,7 @@ const UserManagementPage = () => {
         onConfirm: () => void; intent: ModalIntent;
     }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, intent: 'danger' });
 
+    // This function is still perfect.
     const getSortIcon = (key: SortableKeys) => {
         if (sortConfig.key !== key) return <FaSort className="inline-block ml-2 text-slate-600" />;
         return sortConfig.direction === 'asc'
@@ -139,6 +118,7 @@ const UserManagementPage = () => {
             : <FaSortDown className="inline-block ml-2 text-emerald-400" />;
     };
 
+    // Modal handlers are still perfect.
     const handleOpenEditModal = (user: UserData) => {
         setEditingUser(user);
         setIsEditModalOpen(true);
@@ -156,15 +136,16 @@ const UserManagementPage = () => {
         setTimeout(() => setSelectedUserForAction(null), 300);
     };
 
+    // ===== THE FIX: These functions no longer need to call setUsers! =====
+    // The real-time listener will handle the UI update automatically.
     const handleSaveRoles = async (userId: string, newRoles: string[]) => {
         setIsSaving(true);
         try {
             await updateDoc(doc(db, 'users', userId), { role: newRoles });
             handleCloseEditModal();
-            // We update the state directly via the setter from our hook! Super responsive.
-            setUsers(currentUsers => currentUsers.map(u => u.uid === userId ? { ...u, role: newRoles } : u));
         } catch (err) {
             console.error("Failed to update user roles:", err);
+            // Optionally set an error state to show in the UI
         } finally {
             setIsSaving(false);
         }
@@ -174,18 +155,18 @@ const UserManagementPage = () => {
         const getIntentForStatus = (status: UserStatus): ModalIntent => {
             if (status === 'banned') return 'danger';
             if (status === 'locked') return 'warning';
-            return 'success'; // for 'active'
+            return 'success';
         };
         const intent = getIntentForStatus(statusType);
         const performAction = async () => {
             setIsConfirming(true);
             try {
                 await updateDoc(doc(db, 'users', uid), { status: { type: statusType, reason: reason || '' } });
-                setUsers(currentUsers => currentUsers.map(u => u.uid === uid ? { ...u, status: { type: statusType, reason } } : u));
                 handleCloseActionsModal();
                 setConfirmModalState(s => ({ ...s, isOpen: false }));
             } catch (err) {
                 console.error("Failed to update user status:", err);
+                // Optionally set an error state
             } finally {
                 setIsConfirming(false);
             }
@@ -205,10 +186,11 @@ const UserManagementPage = () => {
             <div className="max-w-7xl mx-auto">
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400 mb-6">User Management</h1>
 
+                {/* Filter section is perfect */}
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="relative">
                         <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                        <input type="text" placeholder="Search current page..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                        <input type="text" placeholder="Search users..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                                className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2.5 px-10 text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 focus:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all duration-300"/>
                     </div>
                     <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)}
@@ -235,6 +217,7 @@ const UserManagementPage = () => {
                     </select>
                 </div>
 
+                {/* Table section is mostly perfect */}
                 <div className="bg-slate-900/50 rounded-lg border border-slate-800 overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-800">
                         <thead className="bg-slate-800/50">
@@ -268,15 +251,12 @@ const UserManagementPage = () => {
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800">
-                        {loading && <tr><td colSpan={6} className="text-center p-8 text-slate-400">Loading Users...</td></tr>}
+                        {loading && <tr><td colSpan={6} className="text-center p-8 text-slate-400">Gearing up the User-Tron 5000...</td></tr>}
                         {error && <tr className="bg-red-900/20"><td colSpan={6} className="text-center p-8 text-red-300 font-mono">Error: {error.message}</td></tr>}
                         {!loading && processedUsers.length === 0 && (<tr><td colSpan={6} className="text-center p-8 text-slate-500">No users match your criteria.</td></tr>)}
                         {!loading && processedUsers.map((user) => (
                             <tr key={user.uid} className={`${getRowStyle(user.status?.type)} transition-colors duration-300`}>
-                                <td className={`px-6 py-4 font-semibold whitespace-nowrap ${getUserNameColor(user.role)}`}>
-                                    {user.displayName || 'N/A'}
-                                    {user.status?.type !== 'active' && <FaExclamationTriangle className={`inline ml-2 ${user.status?.type === 'banned' ? 'text-red-500' : 'text-yellow-500'}`} title={`Status: ${user.status?.type}`} />}
-                                </td>
+                                <td className={`px-6 py-4 font-semibold whitespace-nowrap ${getUserNameColor(user.role)}`}>{user.displayName || 'N/A'}{user.status?.type !== 'active' && <FaExclamationTriangle className={`inline ml-2 ${user.status?.type === 'banned' ? 'text-red-500' : 'text-yellow-500'}`} title={`Status: ${user.status?.type}`} />}</td>
                                 <td className="px-6 py-4 text-indigo-300 whitespace-nowrap">{user.email}</td>
                                 <td className="px-6 py-4">{getClassBadge(user.class)}</td>
                                 <td className="px-6 py-4 text-emerald-300 whitespace-nowrap">{user.created?.toDate().toLocaleDateString('vi-VN') || 'N/A'}</td>
@@ -288,14 +268,12 @@ const UserManagementPage = () => {
                     </table>
                 </div>
 
-                <div className="flex items-center justify-between mt-6">
-                    <button onClick={goToPrevPage} disabled={page <= 1} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded-md hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        <FaChevronLeft /> Previous
-                    </button>
-                    <span className="text-sm text-slate-400">Page {page}</span>
-                    <button onClick={goToNextPage} disabled={isLastPage} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded-md hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        Next <FaChevronRight />
-                    </button>
+                {/* ===== THE FIX: Pagination is GONE! ===== */}
+                {/* We can add a simple count instead for context */}
+                <div className="flex items-center justify-end mt-6">
+                    <span className="text-sm text-slate-400">
+                        Showing {processedUsers.length} user(s)
+                    </span>
                 </div>
             </div>
 

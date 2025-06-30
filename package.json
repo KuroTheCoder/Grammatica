@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -19,10 +19,12 @@
     "@tsparticles/slim": "^3.8.1",
     "@upstash/ratelimit": "^2.0.5",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/blob": "^1.1.1",
     "@vercel/kv": "^3.0.0",
     "@vercel/speed-insights": "^1.2.0",
     "firebase": "^11.9.1",
     "firebase-admin": "^13.4.0",
+    "firebase-functions": "^6.3.2",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.522.0",
     "maath": "^0.10.8",

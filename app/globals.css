@@ -4,14 +4,14 @@
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
 :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1a201a;
+    --foreground: #d4d4d4;
 
     /* --- THE FIX IS HERE --- */
     /* We are defining the color variables that the noise effect needs. */
     /* These are HSL Hue values. 160 is a nice teal, 50 is a gold/yellow. */
-    --color-a: 160;
-    --color-b: 50;
+    --color-a: 120;
+    --color-b: 140;
 }
 
 /* This @theme block is not standard CSS/Tailwind, so let's remove it for now */
@@ -103,4 +103,47 @@ body {
     to {
         transform: rotate(360deg);
     }
+}
+@keyframes aurora-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.aurora-background::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: -10px;
+    background: conic-gradient(
+            from 90deg at 50% 50%,
+            #34d399, /* Emerald */
+            #60a5fa, /* Sky */
+            #a78bfa, /* Violet */
+            #f472b6, /* Pink */
+            #fbbf24, /* Amber */
+            #34d399 /* Back to Emerald */
+    );
+    filter: blur(40px);
+    opacity: 0.25;
+    animation: aurora-spin 20s linear infinite;
+}
+/* app/globals.css */
+/* ... (keep all your other styles) ... */
+
+.dynamic-spotlight-background {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: -2; /* Sits behind everything but the main bg */
+    transition: background 0.5s ease-out;
+    background: radial-gradient(
+            250px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px),
+            var(--spotlight-color-1, #34d39930),
+            var(--spotlight-color-2, #60a5fa10),
+            transparent 70%
+    );
 }

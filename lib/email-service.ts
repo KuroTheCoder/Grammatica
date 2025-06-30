@@ -113,7 +113,7 @@ export async function sendEmail({ to, subject, html }: EmailParams) {
         console.log(`[Email Service] Email sent successfully!`);
     } catch (error) {
         console.error('[Email Service] Error sending email:', error);
-        // Re-throw the error so the calling function knows something went wrong.
+        // Re-throw the error so the calling functions knows something went wrong.
         throw new Error('Failed to send email.');
     }
 }

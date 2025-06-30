@@ -1,52 +1,60 @@
-// components/shared/Modal.tsx
+// app/components/shared/Modal.tsx
 "use client";
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { IconType } from 'react-icons';
 
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-    children: React.ReactNode;
     title: string;
+    children: React.ReactNode;
+    titleIcon?: IconType | React.ForwardRefExoticComponent<unknown>;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
-    React.useEffect(() => {
-        const handleEsc = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
-        window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
-    }, [onClose]);
-
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, titleIcon: TitleIcon }) => {
     return (
         <AnimatePresence>
             {isOpen && (
+                // THE FINAL FIX: THE TRULY TRANSPARENT BACKDROP
+                // No bg-black, no backdrop-blur. This div is now completely invisible.
+                // Its ONLY job is to fill the screen and center the modal card.
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     onClick={onClose}
-                    className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                 >
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0, y: 50 }}
-                        animate={{ scale: 1, opacity: 1, y: 0, transition: { type: 'spring', stiffness: 250, damping: 25 } }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 50 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        // The modal card ITSELF is the pane of glass.
+                        className="m-auto bg-slate-900/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col"
                         onClick={(e) => e.stopPropagation()}
-                        className="bg-gradient-to-br from-gray-900 to-purple-900/50 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md"
                     >
-                        <div className="flex items-center justify-between p-4 border-b border-white/10">
-                            <h3 className="text-lg font-bold text-white">{title}</h3>
-                            <motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.9 }} onClick={onClose} className="p-1 rounded-full text-gray-400 hover:text-white">
+                        {/* Header */}
+                        <header className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+                            <div className="flex items-center gap-3">
+                                {TitleIcon && <TitleIcon className="text-white/80" size={20} />}
+                                <h2 className="text-xl font-bold text-white">{title}</h2>
+                            </div>
+                            <motion.button
+                                whileHover={{ scale: 1.1, rotate: 90 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={onClose}
+                                className="p-1 rounded-full text-white/70 hover:text-white hover:bg-white/10"
+                            >
                                 <X size={24} />
                             </motion.button>
-                        </div>
-                        <div className="p-6">
+                        </header>
+
+                        {/* Content */}
+                        <div className="flex-grow p-4 sm:p-6 overflow-y-auto">
                             {children}
                         </div>
                     </motion.div>

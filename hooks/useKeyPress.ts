@@ -1,18 +1,22 @@
+// hooks/useKeyPress.ts
 "use client";
 
 import { useEffect, useCallback } from 'react';
 
-// This is our new power tool. A custom hook to detect key presses.
-export const useKeyPress = (targetKey: string, callback: () => void, modifier?: 'ctrl' | 'meta' | 'alt') => {
+// THE NEW AND IMPROVED HOOK! No more 'modifier' prop needed.
+// It's now smart enough to handle Ctrl OR Cmd by default.
+export const useKeyPress = (targetKey: string, callback: () => void) => {
     const handleKeyPress = useCallback(
         (event: KeyboardEvent) => {
-            const isModifierPressed = modifier ? (modifier === 'meta' ? event.metaKey : event.ctrlKey) : true;
-            if (event.key.toLowerCase() === targetKey.toLowerCase() && isModifierPressed) {
+            // THE SECRET SAUCE: Check for EITHER metaKey (Cmd on Mac) OR ctrlKey (Ctrl on Win/Linux).
+            const isModifierPressed = event.metaKey || event.ctrlKey;
+
+            if (isModifierPressed && event.key.toLowerCase() === targetKey.toLowerCase()) {
                 event.preventDefault();
                 callback();
             }
         },
-        [targetKey, callback, modifier]
+        [targetKey, callback] // No more 'modifier' dependency
     );
 
     useEffect(() => {

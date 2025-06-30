@@ -22,7 +22,7 @@ export function useDebounce<T>(value: T, delay: number): T {
                 setDebouncedValue(value);
             }, delay);
 
-            // This is the cleanup function.
+            // This is the cleanup functions.
             // It runs every time the `value` or `delay` changes, OR when the component unmounts.
             // It clears the previous timer, effectively resetting it.
             return () => {

@@ -3,23 +3,29 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ====================================================================
-    // USERS COLLECTION (UPDATED & FIXED)
+    // USERS COLLECTION (LEGENDARY UPGRADE)
     // ====================================================================
     match /users/{userId} {
-      // AI ĐƯỢC ĐỌC MỘT DOCUMENT? (GET)
-      // Bất kỳ user nào cũng có thể đọc profile của chính mình.
+      // READ rules are still perfect, no changes here.
       allow get: if request.auth != null && request.auth.uid == userId;
+      allow list: if request.auth != null && 'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
 
-      // AI ĐƯỢC ĐỌC CẢ DANH SÁCH? (LIST) <-- THIS IS THE FIX
-      // Chỉ admin mới có quyền đọc toàn bộ danh sách users.
-      allow list: if request.auth != null &&
-                     'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      // -- NEW, SMARTER WRITE RULES --
 
-      // AI ĐƯỢC GHI? <-- SUGGESTED CHANGE FOR DASHBOARD FUNCTIONALITY
-      // Chỉ admin mới có quyền sửa thông tin user (ví dụ: đổi role).
-      // Vẫn rất an toàn vì user thường không thể tự sửa.
-      allow write: if request.auth != null &&
-                      'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      // Who can CREATE new users? Only admins. (Or backend functions).
+      allow create: if request.auth != null && 'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+
+      // Who can UPDATE a user's profile?
+      allow update: if
+          // Path 1: The user making the request is an admin.
+          (request.auth != null && 'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role) ||
+          // OR Path 2: The user is updating their OWN profile...
+          (request.auth != null && request.auth.uid == userId &&
+          // ...AND they are NOT trying to change sensitive fields like their role.
+          request.resource.data.role == resource.data.role);
+
+      // Who can DELETE users? Only admins.
+      allow delete: if request.auth != null && 'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
     // ====================================================================
@@ -31,13 +37,11 @@ service cloud.firestore {
                       'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
-    // All your other rules are great, let's keep them!
-
     // ====================================================================
-    // FEEDBACKS COLLECTION
+    // FEEDBACKS COLLECTION (Unchanged)
     // ====================================================================
     match /feedbacks/{feedbackId} {
-      allow read: if false;
+      allow read: if false; // Admins should probably read this from a secure backend function
       allow create: if request.auth != null &&
                        request.resource.data.name is string &&
                        request.resource.data.name.size() < 100 &&
@@ -50,7 +54,7 @@ service cloud.firestore {
     }
 
     // ====================================================================
-    // SECURITY TOKENS COLLECTION
+    // SECURITY TOKENS COLLECTION (Unchanged)
     // ====================================================================
     match /security_tokens/{docId} {
       allow read, write: if false;

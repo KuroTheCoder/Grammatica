@@ -13,7 +13,6 @@ interface StreakModalProps {
     currentStreak: number;
 }
 
-// The milestones on our Path of Fire
 const streakMilestones = [
     { day: 3, title: 'Spark', reward: 'Your journey begins.' },
     { day: 7, title: 'Kindling', reward: '+10 XP Boost' },
@@ -26,7 +25,7 @@ const streakMilestones = [
 const MAX_STREAK_DAY = 365;
 
 // =================================================================================
-// THE DYNAMIC FLAME ENGINE - Type-Safe From the Start
+// THE DYNAMIC FLAME ENGINE - This is already perfect, no changes needed.
 // =================================================================================
 interface RGBColor { r: number; g: number; b: number; }
 const START_COLOR: RGBColor = { r: 251, g: 146, b: 60 };  // Orange-400
@@ -40,7 +39,6 @@ const interpolateColor = (color1: RGBColor, color2: RGBColor, factor: number): s
 };
 
 const getColorForStreakDay = (day: number): string => {
-    // Clamp the day to the max for calculation purposes
     const clampedDay = Math.min(day, MAX_STREAK_DAY);
     const factor = clampedDay / MAX_STREAK_DAY;
     return interpolateColor(START_COLOR, END_COLOR, factor);
@@ -50,16 +48,17 @@ const getColorForStreakDay = (day: number): string => {
 
 const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose, currentStreak }) => {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="The Path of Fire">
-            <div className="flex flex-col items-center text-center">
-                <h3 className="text-5xl font-black flex items-center gap-3" style={{ color: getColorForStreakDay(currentStreak) }}>
+        <Modal isOpen={isOpen} onClose={onClose} title="The Path of Fire" titleIcon={FaFire}>
+            <div className="flex flex-col items-center text-center p-4">
+                {/* RESPONSIVE HEADER: Smaller on mobile, bigger on desktop */}
+                <h3 className="text-4xl md:text-5xl font-black flex items-center gap-3" style={{ color: getColorForStreakDay(currentStreak) }}>
                     <FaFire /> {currentStreak}
                 </h3>
-                <p className="text-lg text-gray-200 mb-6">Day Streak! Keep the flame alive.</p>
+                <p className="text-md md:text-lg text-gray-200 mb-6">Day Streak! Keep the flame alive.</p>
 
-                <div className="relative w-full flex flex-col items-center max-h-[50vh] overflow-y-auto pr-2">
-                    {/* The connector "path" */}
-                    <div className="absolute top-0 bottom-0 left-12 w-1 bg-white/10 rounded-full" />
+                {/* THE RESPONSIVE PATH: Using a before pseudo-element for a more robust line */}
+                <div className="relative w-full flex flex-col items-start max-h-[50vh] overflow-y-auto pr-2
+                                before:absolute before:top-0 before:bottom-0 before:left-6 sm:before:left-8 before:w-1 before:bg-white/10 before:rounded-full">
 
                     {streakMilestones.map((milestone, index) => {
                         const isUnlocked = currentStreak >= milestone.day;
@@ -70,16 +69,20 @@ const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose, currentStrea
                                 key={milestone.day}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0, transition: { type: 'spring', delay: index * 0.1 } }}
-                                className={`relative flex items-center w-full my-2 p-3 rounded-lg transition-all ${isUnlocked ? 'opacity-100' : 'opacity-50'}`}
+                                whileHover={{ scale: 1.02, boxShadow: `0 0 15px ${dynamicColor}` }}
+                                // RESPONSIVE LAYOUT: Stacks on mobile, row on desktop!
+                                className={`relative flex flex-col sm:flex-row items-start sm:items-center w-full my-3 p-3 transition-all ${isUnlocked ? 'opacity-100' : 'opacity-50'}`}
                             >
-                                <div className="z-10 flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-gray-900 border-4" style={{ borderColor: isUnlocked ? dynamicColor : '#4B5563' }}>
+                                {/* Responsive Icon */}
+                                <div className="z-10 flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center bg-gray-900 border-4 transition-all" style={{ borderColor: isUnlocked ? dynamicColor : '#4B5563' }}>
                                     {isUnlocked ? (
-                                        <FaFire size={32} style={{ color: dynamicColor }} />
+                                        <FaFire className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: dynamicColor }} />
                                     ) : (
-                                        <Lock size={32} className="text-gray-500" />
+                                        <Lock className="w-6 h-6 sm:w-8 sm-h-8 text-gray-500" />
                                     )}
                                 </div>
-                                <div className="ml-4 text-left">
+                                {/* Responsive Text */}
+                                <div className="ml-0 sm:ml-4 mt-2 sm:mt-0 text-left">
                                     <h4 className="font-bold text-white">Day {milestone.day}: {milestone.title}</h4>
                                     <p className="text-sm text-gray-400">{milestone.reward}</p>
                                 </div>

@@ -1,3 +1,4 @@
+// app/(Landing)/page.tsx
 "use client";
 
 // All imports are verified to be in use by the components and logic below.
@@ -17,15 +18,13 @@ import {
 } from 'react-icons/fa';
 import {FiLogIn} from "react-icons/fi";
 import Cookies from 'js-cookie';
-import dynamic from 'next/dynamic'; // <-- IMPORT DYNAMIC
-import {auth, db} from '@/lib/firebase';
+import dynamic from 'next/dynamic';
+import { auth, db } from '@/lib/firebase';
 import {sendPasswordResetEmail, signInWithEmailAndPassword} from "firebase/auth";
 import {collection, doc, getDoc, limit, orderBy, query} from "firebase/firestore";
 import {useCollection} from 'react-firebase-hooks/firestore';
 import FeedbackButton from "@/components/shared/FeedbackButton";
 
-// --- THIS IS THE FIX ---
-// Lazily load any component that uses browser-only APIs or is visually heavy
 const InteractiveSpotlightBackground = dynamic(() => import('@/components/shared/InteractiveSpotlightBackground'), {ssr: false});
 
 // ============================================================================
@@ -319,8 +318,6 @@ const LoginPage = () => {
             const token = await user.getIdToken();
             Cookies.set('auth-token', token, {expires: 1, path: '/'});
 
-            console.log("auth-token cookie set successfully on the client.");
-
             const destination = selectedRole === 'teacher' ? '/admin' : '/dashboard';
             window.location.assign(destination);
 
@@ -367,7 +364,9 @@ const LoginPage = () => {
     return (
         <main
             className="relative min-h-screen w-full text-slate-200 flex flex-col items-center justify-center p-4 overflow-hidden bg-transparent">
-            <InteractiveSpotlightBackground isTeacher={isTeacher}/>
+
+            <InteractiveSpotlightBackground variant={isTeacher ? 'teacher' : 'student'} />
+
             <style
                 dangerouslySetInnerHTML={{__html: `@keyframes spin-slow { to { transform: rotate(360deg); } } .animate-spin-slow { animation: spin-slow 4s linear infinite; }`}}/>
             <ClientOnly>
