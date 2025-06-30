@@ -1,8 +1,8 @@
-
 // types/user.ts
 import { Timestamp } from 'firebase/firestore';
+import { IconType } from 'react-icons';
 
-// All our shared user-related types now live here, exported for the whole app to use.
+// CORE ADMIN-FACING DATA
 export type UserStatus = 'active' | 'locked' | 'banned';
 
 export interface UserData {
@@ -15,6 +15,21 @@ export interface UserData {
     status?: { type: UserStatus; reason?: string; };
 }
 
-export type SortableKeys = 'displayName' | 'email' | 'class' | 'created';
+// GAMIFICATION DATA
+export interface Badge { id: string; icon: IconType; color: string; tooltip: string; description?: string; earnedOn?: string; }
+export interface Skill { label: string; percentage: number; color: string; icon: IconType; }
 
+// THE MASTER USER PROFILE - COMBINES EVERYTHING
+export interface UserProfile extends UserData {
+    avatarUrl: string;
+    profileStatus: string; // Renamed from 'status' to avoid conflict with the UserData status object
+    xp: { current: number; max: number };
+    mastery: string;
+    streak: number;
+    badges: Badge[];
+    skills: Skill[];
+}
+
+// SORTING TYPES FOR ADMIN PANEL (Unchanged)
+export type SortableKeys = 'displayName' | 'email' | 'class' | 'created';
 export type SortConfig = { key: SortableKeys; direction: 'asc' | 'desc'; };
