@@ -30,8 +30,7 @@ const Modal: React.FC<ModalProps> = ({
                                          backgroundStyle,
                                          headerClassName,
                                          backgroundClassName,
-                                         headerGradient,
-                                         hideCloseButton
+                                         headerGradient
                                      }) => {
     return (
         <AnimatePresence>
