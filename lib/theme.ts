@@ -7,6 +7,7 @@
 // TYPE DEFINITIONS & HELPERS
 // =================================================================================
 
+import { IconType } from 'react-icons'; // Import IconType here
 
 // A reusable function to mix colors. Untouched, it's perfect.
 // =================================================================================
@@ -43,12 +44,61 @@ export const getMasteryGradient = (level: string | undefined): string => {
 // =================================================================================
 // STREAK THEME ENGINE
 // =================================================================================
-export const getStreakStyle = (streak: number): string => {
-    if (streak >= 100) return 'from-yellow-400 via-orange-500 to-red-500'; // Legendary Flame
-    if (streak >= 50) return 'from-orange-500 to-red-500';             // Epic Fire
-    if (streak >= 25) return 'from-amber-400 to-orange-500';           // Hot Streak
-    if (streak > 0) return 'from-lime-400 to-yellow-400';              // Warming Up
-    return 'from-slate-600 to-slate-700';                              // Cold
+
+// =================================================================================
+// STREAK THEME ENGINE (THE UPGRADE!)
+// =================================================================================
+
+import { FaFire, FaFireAlt, FaSun, FaStar, FaMedal, FaCrown, FaAward } from 'react-icons/fa'; // Combined imports
+
+const STREAK_THEMES = [
+    { threshold: 100, name: 'Supernova', gradient: 'from-yellow-400 via-orange-500 to-red-500', color: '#F59E0B', icon: FaStar },
+    { threshold: 50, name: 'Solar Flare', gradient: 'from-orange-500 to-red-500', color: '#EF4444', icon: FaSun },
+    { threshold: 25, name: 'Wildfire', gradient: 'from-amber-400 to-orange-500', color: '#F97316', icon: FaFireAlt },
+    { threshold: 1, name: 'Kindling', gradient: 'from-lime-400 to-yellow-400', color: '#A3E635', icon: FaFire },
+    { threshold: 0, name: 'Ember', gradient: 'from-slate-600 to-slate-700', color: '#475569', icon: FaFire },
+];
+
+export const getStreakStyle = (streak: number) => {
+    return STREAK_THEMES.find(theme => streak >= theme.threshold) || STREAK_THEMES[STREAK_THEMES.length - 1];
+};
+
+// =================================================================================
+// RANK THEME ENGINE
+// =================================================================================
+
+interface RankStyle {
+    color: string;
+    gradient: string;
+    icon: IconType;
+}
+
+export const getRankStyle = (rank: number): RankStyle => {
+    if (rank === 1) {
+        return {
+            color: '#FFD700', // Gold
+            gradient: 'from-yellow-400 to-amber-500',
+            icon: FaCrown,
+        };
+    } else if (rank === 2) {
+        return {
+            color: '#C0C0C0', // Silver
+            gradient: 'from-gray-400 to-gray-500',
+            icon: FaAward,
+        };
+    } else if (rank === 3) {
+        return {
+            color: '#CD7F32', // Bronze
+            gradient: 'from-amber-700 to-orange-800',
+            icon: FaMedal,
+        };
+    } else {
+        return {
+            color: '#34D399', // Default Green
+            gradient: 'from-green-400 to-emerald-500',
+            icon: FaMedal,
+        };
+    }
 };
 
 // =================================================================================

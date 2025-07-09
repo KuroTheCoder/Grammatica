@@ -12,15 +12,28 @@ interface ModalProps {
     title: string;
     children: React.ReactNode;
     titleIcon?: IconType | React.ForwardRefExoticComponent<unknown>;
+    headerStyle?: React.CSSProperties;
+    backgroundStyle?: React.CSSProperties;
+    headerClassName?: string;
+    backgroundClassName?: string;
+    headerGradient?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, titleIcon: TitleIcon }) => {
+const Modal: React.FC<ModalProps> = ({ 
+    isOpen, 
+    onClose, 
+    title, 
+    children, 
+    titleIcon: TitleIcon, 
+    headerStyle, 
+    backgroundStyle, 
+    headerClassName, 
+    backgroundClassName, 
+    headerGradient 
+}) => {
     return (
         <AnimatePresence>
             {isOpen && (
-                // THE FINAL FIX: THE TRULY TRANSPARENT BACKDROP
-                // No bg-black, no backdrop-blur. This div is now completely invisible.
-                // Its ONLY job is to fill the screen and center the modal card.
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -33,15 +46,24 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, titleIc
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 50 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        // The modal card ITSELF is the pane of glass.
-                        className="m-auto bg-slate-900/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col"
+                        className={`m-auto bg-slate-900/50 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col ${backgroundClassName}`}
+                        style={backgroundStyle}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <header className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+                        <header 
+                            className={`flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0 ${headerClassName}`}
+                            style={headerStyle}
+                        >
                             <div className="flex items-center gap-3">
                                 {TitleIcon && <TitleIcon className="text-white/80" size={20} />}
-                                <h2 className="text-xl font-bold text-white">{title}</h2>
+                                {headerGradient ? (
+                                    <h2 className={`text-xl font-bold bg-gradient-to-r ${headerGradient} text-transparent bg-clip-text`}>
+                                        {title}
+                                    </h2>
+                                ) : (
+                                    <h2 className="text-xl font-bold text-white">{title}</h2>
+                                )}
                             </div>
                             <motion.button
                                 whileHover={{ scale: 1.1, rotate: 90 }}

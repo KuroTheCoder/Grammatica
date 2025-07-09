@@ -6,7 +6,7 @@ import Modal from '@/components/shared/Modal';
 import { motion, AnimatePresence } from 'framer-motion';
 import MasteryLevelItem from './MasteryLevelItem';
 import { Star, Sprout, Shield, Flame } from 'lucide-react'; // Our new icons!
-import { getColorForMastery, masteryLevels, MasteryLevel } from '@/lib/theme';
+import { getColorForMastery, getMasteryGradient, masteryLevels, MasteryLevel } from '@/lib/theme';
 
 interface MasteryModalProps {
     isOpen: boolean;
@@ -49,10 +49,18 @@ const MasteryModal: React.FC<MasteryModalProps> = ({ isOpen, onClose, currentMas
     const displayKey = (hoveredLevel || normalizedCurrentMastery) as MasteryLevel;
     const displayInfo = levelDescriptions[displayKey];
     const displayColor = getColorForMastery(displayKey);
+    const displayGradient = getMasteryGradient(displayKey);
     const DisplayIcon = getMasteryIcon(displayKey);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Your Mastery Journey" titleIcon={Star}>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Your Mastery Journey"
+            titleIcon={Star}
+            headerGradient={displayGradient}
+            backgroundClassName="bg-gradient-to-br from-gray-900 to-black"
+        >
             <div className="flex flex-col items-center w-full p-8 gap-8">
                 {/* === THE COMMAND CENTER WITH THEMATIC ICONS === */}
                 <div className="w-full text-center min-h-[80px]">

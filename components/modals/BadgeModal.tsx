@@ -5,6 +5,7 @@ import React from 'react';
 import Modal from '@/components/shared/Modal';
 import { motion } from 'framer-motion';
 import { IconType } from 'react-icons';
+import { FaAward, FaUserAstronaut, FaFire } from 'react-icons/fa';
 
 // We'll get this data from props later
 interface Badge {
@@ -22,7 +23,27 @@ interface BadgeModalProps {
     badges: Badge[];
 }
 
-const BadgeModal: React.FC<BadgeModalProps> = ({ isOpen, onClose, badges }) => {
+// TODO: Replace this with actual badge data fetched from the user's profile
+const hardcodedBadges: Badge[] = [
+    {
+        id: 'pioneer',
+        icon: FaUserAstronaut,
+        color: '#A78BFA',
+        tooltip: 'Pioneer',
+        description: 'Joined Grammatica during the beta phase.',
+        earnedOn: '2024-07-09',
+    },
+    {
+        id: 'streak-7',
+        icon: FaFire,
+        color: '#F97316',
+        tooltip: '7-Day Streak',
+        description: 'Kept the learning flame alive for a whole week!',
+        earnedOn: '2024-07-08',
+    },
+];
+
+const BadgeModal: React.FC<BadgeModalProps> = ({ isOpen, onClose, badges = hardcodedBadges }) => {
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -39,7 +60,14 @@ const BadgeModal: React.FC<BadgeModalProps> = ({ isOpen, onClose, badges }) => {
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="My Trophy Case">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="My Trophy Case"
+            titleIcon={FaAward}
+            headerGradient="from-amber-400 to-yellow-500"
+            backgroundClassName="bg-gradient-to-br from-gray-900 to-black [box-shadow:0_0_20px_rgba(252,212,74,0.5)]"
+        >
             <motion.div
                 variants={containerVariants}
                 initial="hidden"

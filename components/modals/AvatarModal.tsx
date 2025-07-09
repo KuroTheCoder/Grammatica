@@ -9,7 +9,7 @@ import { UploadCloud, CheckCircle, AlertTriangle, LoaderCircle } from 'lucide-re
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-
+import { FaUserEdit } from 'react-icons/fa';
 
 interface AvatarModalProps {
     isOpen: boolean;
@@ -101,8 +101,18 @@ const AvatarModal: React.FC<AvatarModalProps> = ({ isOpen, onClose }) => {
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="Upload a New Avatar">
-            <div className="flex flex-col items-center gap-4">
+        <Modal
+            isOpen={isOpen}
+            onClose={handleClose}
+            title="Upload a New Avatar"
+            titleIcon={FaUserEdit}
+            headerGradient="from-purple-500 to-pink-500"
+            backgroundClassName="bg-gradient-to-br from-gray-900 to-black [box-shadow:0_0_20px_rgba(168,85,247,0.5)]"
+        >
+            <motion.div
+                whileHover={{ scale: 1.01, y: -5 }}
+                className="flex flex-col items-center gap-4"
+            >
                 <label htmlFor="avatar-upload" className="w-full h-48 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center text-center p-4 cursor-pointer hover:border-purple-500 hover:bg-white/5 transition-colors relative overflow-hidden">
                     {previewUrl ? (
                         <Image src={previewUrl} alt="Avatar Preview" fill={true} className="object-contain" /> // <-- THE LEGENDARY FIX IS HERE!
@@ -132,7 +142,7 @@ const AvatarModal: React.FC<AvatarModalProps> = ({ isOpen, onClose }) => {
                         "Upload and Set Avatar"
                     )}
                 </button>
-            </div>
+            </motion.div>
         </Modal>
     );
 };

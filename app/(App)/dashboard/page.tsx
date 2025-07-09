@@ -23,11 +23,11 @@ import FloatingDustBackground from '@/components/shared/FloatingDustBackground';
 
 // --- Icon Imports (The Full Roster) ---
 import { IconType } from 'react-icons';
-import { FaBookOpen, FaPenNib, FaHeadphones, FaMicrophone, FaCrown } from 'react-icons/fa';
+import { FaBookOpen, FaPenNib, FaHeadphones, FaMicrophone, FaCrown, FaUserAstronaut, FaFire } from 'react-icons/fa';
 import { SiReact, SiNextdotjs } from 'react-icons/si';
 
 const skillIconMap: Record<string, IconType> = { Reading: FaBookOpen, Writing: FaPenNib, Listening: FaHeadphones, Speaking: FaMicrophone };
-const badgeIconMap: Record<string, IconType> = { react: SiReact, nextjs: SiNextdotjs };
+const badgeIconMap: Record<string, IconType> = { react: SiReact, nextjs: SiNextdotjs, pioneer: FaUserAstronaut, 'streak-7': FaFire };
 
 const StudentDashboardPage = () => {
     const [isSidebarExpanded, setSidebarExpanded] = useState(false);
@@ -47,17 +47,40 @@ const StudentDashboardPage = () => {
                 const userDocRef = doc(db, 'users', user.uid);
                 const docSnap = await getDoc(userDocRef);
 
+                // TODO: Replace this with actual badge data fetched from the user's profile
+                const hardcodedBadges: Badge[] = [
+                    {
+                        id: 'pioneer',
+                        icon: FaUserAstronaut,
+                        color: '#A78BFA',
+                        tooltip: 'Pioneer',
+                        description: 'Joined Grammatica during the beta phase.',
+                        earnedOn: '2024-07-09',
+                    },
+                    {
+                        id: 'streak-7',
+                        icon: FaFire,
+                        color: '#F97316',
+                        tooltip: '7-Day Streak',
+                        description: 'Kept the learning flame alive for a whole week!',
+                        earnedOn: '2024-07-08',
+                    },
+                ];
+
                 if (docSnap.exists()) {
                     const rawData = docSnap.data();
                     const processedProfile: UserProfile = {
                         uid: user.uid, email: rawData.email || "", role: rawData.role || ["student"], class: rawData.class || "N/A", displayName: rawData.displayName || "New User", avatarUrl: rawData.avatarUrl || 'https://i.pravatar.cc/150', profileStatus: rawData.profileStatus || "Ready to learn!", mastery: rawData.mastery || "A1", streak: rawData.streak ?? 0, xp: rawData.xp || { current: 0, max: 100 },
-                        badges: (rawData.badges || []).map((badge: Omit<Badge, 'icon'>) => ({ ...badge, icon: badgeIconMap[badge.id] || FaCrown })),
+                        badges: [
+                            ...hardcodedBadges,
+                            ...(rawData.badges || []).map((badge: Omit<Badge, 'icon'>) => ({ ...badge, icon: badgeIconMap[badge.id] || FaCrown }))
+                        ],
                         skills: (rawData.skills || []).map((skill: Omit<Skill, 'icon'>) => ({ ...skill, icon: skillIconMap[skill.label] || FaBookOpen })),
                     };
                     setUserProfile(processedProfile);
                 } else {
                     console.warn("No Firestore profile found for this user. Creating a temporary client-side profile.");
-                    const defaultProfile: UserProfile = { uid: user.uid, email: user.email || "", displayName: user.displayName || "New Student", role: ["student"], class: "Unassigned", avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`, profileStatus: "Ready to start learning!", mastery: "A1", streak: 0, xp: { current: 0, max: 100 }, badges: [], skills: [] };
+                    const defaultProfile: UserProfile = { uid: user.uid, email: user.email || "", displayName: user.displayName || "New Student", role: ["student"], class: "Unassigned", avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`, profileStatus: "Ready to start learning!", mastery: "A1", streak: 0, xp: { current: 0, max: 100 }, badges: hardcodedBadges, skills: [] };
                     setUserProfile(defaultProfile);
                 }
             };

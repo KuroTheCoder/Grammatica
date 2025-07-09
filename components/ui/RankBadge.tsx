@@ -1,10 +1,9 @@
-
 // components/ui/RankBadge.tsx
 "use client";
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaMedal } from 'react-icons/fa';
+import { getRankStyle } from '@/lib/theme'; // Import getRankStyle
 
 interface RankBadgeProps {
     rank: number;
@@ -17,17 +16,19 @@ const RankBadge: React.FC<RankBadgeProps> = ({ rank, className }) => {
         // Add any desired action here, e.g., open a leaderboard modal
     };
 
+    const rankStyle = getRankStyle(rank); // Get the rank style
+
     return (
         <motion.button
             onClick={handleClick}
-            initial={{ opacity: 0, y: -10 }}
+            // initial={{ opacity: 0, y: -10 }} // Removed initial prop to fix hydration
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, type: 'spring', stiffness: 300, damping: 20 }}
-            whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(34, 197, 94, 0.5)' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }} // Removed delay
+            whileHover={{ scale: 1.05, boxShadow: `0 0 15px ${rankStyle.color}`, transition: { type: 'spring', stiffness: 500, damping: 30 } }} // Added specific transition for whileHover
             whileTap={{ scale: 0.95 }}
-            className={`flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30 shadow-lg ${className}`}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${rankStyle.gradient} text-white border border-white/30 shadow-lg ${className}`} // Apply gradient and white text/border
         >
-            <FaMedal />
+            <rankStyle.icon /> {/* Use dynamic icon */}
             <span className="font-bold">#{rank}</span>
             <span className="font-semibold text-sm">in class</span>
         </motion.button>

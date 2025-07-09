@@ -1,10 +1,9 @@
-
 // components/modals/AnnouncementsModal.tsx
 "use client";
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaBell } from 'react-icons/fa';
+import { FaBullhorn } from 'react-icons/fa';
 import Modal from '@/components/shared/Modal';
 
 interface Announcement {
@@ -26,7 +25,14 @@ interface AnnouncementsModalProps {
 
 const AnnouncementsModal: React.FC<AnnouncementsModalProps> = ({ isOpen, onClose }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Announcements" titleIcon={FaBell}>
+    <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Announcements"
+        titleIcon={FaBullhorn}
+        headerGradient="from-blue-500 to-cyan-500"
+        backgroundClassName="bg-gradient-to-br from-gray-900 to-black [box-shadow:0_0_20px_rgba(59,130,246,0.5)]"
+    >
         <div className="mt-4 space-y-3">
           {dummyAnnouncements.map((announcement, index) => (
             <motion.div
@@ -34,7 +40,7 @@ const AnnouncementsModal: React.FC<AnnouncementsModalProps> = ({ isOpen, onClose
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.15 }}
-              whileHover={{ scale: 1.02, backgroundColor: '#374151' }}
+              whileHover={{ scale: 1.02, y: -5, backgroundColor: '#374151' }}
               whileTap={{ scale: 0.98 }}
               className="p-3 bg-gray-800/60 rounded-lg cursor-pointer"
             >
