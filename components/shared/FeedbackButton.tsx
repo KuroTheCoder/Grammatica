@@ -2,14 +2,16 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VscFeedback } from 'react-icons/vsc';
-import FeedbackModal from './FeedbackModal';
 
-const FeedbackButton = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
+interface FeedbackButtonProps {
+    onClick: () => void; // Add onClick prop
+}
+
+const FeedbackButton: React.FC<FeedbackButtonProps> = ({ onClick }) => {
+    const [isHovered, setIsHovered] = React.useState(false);
 
     // Responsive hover handlers
     const handleHoverStart = () => {
@@ -27,7 +29,7 @@ const FeedbackButton = () => {
             <motion.button
                 onHoverStart={handleHoverStart}
                 onHoverEnd={handleHoverEnd}
-                onClick={() => setIsModalOpen(true)}
+                onClick={onClick} // Use the passed onClick prop
 
                 initial={{ opacity: 0, y: 20 }}
 
@@ -68,8 +70,6 @@ const FeedbackButton = () => {
                     </AnimatePresence>
                 </motion.div>
             </motion.button>
-
-            <FeedbackModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </>
     );
 };

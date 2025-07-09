@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google"; // Hoặc font Geist của bạn
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
+import { NotificationProvider } from '@/contexts/NotificationContext'; // Import NotificationProvider
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +21,11 @@ export default function RootLayout({
     return (
         <html lang="vie" suppressHydrationWarning>
         {/* Body không có class style, để các layout con tự quyết định */}
-        <body className={inter.className}>{children}</body>
+        <body className={inter.className}>
+            <NotificationProvider>
+                {children}
+            </NotificationProvider>
+        </body>
         <Analytics />
         <SpeedInsights />
         </html>

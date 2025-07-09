@@ -8,12 +8,14 @@ import { getRankStyle } from '@/lib/theme'; // Import getRankStyle
 interface RankBadgeProps {
     rank: number;
     className?: string;
+    onClick?: () => void; // Added onClick prop
 }
 
-const RankBadge: React.FC<RankBadgeProps> = ({ rank, className }) => {
+const RankBadge: React.FC<RankBadgeProps> = ({ rank, className, onClick }) => { // Destructure onClick
     const handleClick = () => {
         console.log(`Rank badge clicked for rank: ${rank}`);
         // Add any desired action here, e.g., open a leaderboard modal
+        onClick?.(); // Call onClick if it exists
     };
 
     const rankStyle = getRankStyle(rank); // Get the rank style

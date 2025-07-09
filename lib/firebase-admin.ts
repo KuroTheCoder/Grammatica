@@ -4,7 +4,7 @@
 import * as admin from 'firebase-admin';
 
 // Xử lý chuỗi private key từ file .env.local.
-// File .env không thể chứa ký tự xuống dòng, nên ta phải thay thế '\\n' bằng '\n'.
+// File .env không thể chứa ký tự xuống dòng, nên ta phải thay thế '\n' bằng '\n'.
 const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
 // Kiểm tra xem đã có instance nào của Firebase Admin được khởi tạo chưa.

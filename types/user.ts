@@ -28,6 +28,7 @@ export interface UserProfile extends UserData {
     streak: number;
     badges: Badge[];
     skills: Skill[];
+    onboardingCompleted?: boolean; // New field for onboarding status
 }
 
 // SORTING TYPES FOR ADMIN PANEL (Unchanged)

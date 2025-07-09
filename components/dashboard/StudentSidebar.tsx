@@ -2,26 +2,20 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    ChevronsLeft,
-    LayoutDashboard,
-    BotMessageSquare,
-    Settings,
-    BookOpenCheck,
-    BarChart3,
-} from 'lucide-react';
-// No more unused 'Image' or bad '@headlessui/react' import. CLEAN.
+import Image from 'next/image'; // Import Image for Icons8 icons
+// No more ChevronsLeft import
 
 // --- DATA-DRIVEN NAVIGATION ---
-const navItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, href: '#' },
-    { name: 'My Lessons', icon: BookOpenCheck, href: '#' },
-    { name: 'AI Chat', icon: BotMessageSquare, href: '#' },
-    { name: 'Progress', icon: BarChart3, href: '#' },
-];
+// Sidebar for rarely accessed items
+const navItems: NavItemType[] = []; // No top navigation items for rarely accessed sidebar
 
-const bottomNavItems = [
-    { name: 'Settings', icon: Settings, href: '#' },
+const bottomNavItems: NavItemType[] = [
+    { name: 'Profile', iconUrl: 'https://img.icons8.com/ios-filled/50/FFFFFF/user-male-circle.png', href: '/profile' },
+    { name: 'Goals', iconUrl: 'https://img.icons8.com/ios-filled/50/FFFFFF/goal.png', href: '/goals' },
+    { name: 'Settings', iconUrl: 'https://img.icons8.com/ios-filled/50/FFFFFF/settings.png', href: '#' },
+    { name: 'Help & Support', iconUrl: 'https://img.icons8.com/ios-filled/50/FFFFFF/help.png', href: '#' },
+    { name: 'About', iconUrl: 'https://img.icons8.com/ios-filled/50/FFFFFF/info.png', href: '#' },
+    { name: 'Logout', iconUrl: 'https://img.icons8.com/ios-filled/50/FFFFFF/logout-rounded.png', href: '#' },
 ];
 // -----------------------------------------------------------------
 
@@ -31,7 +25,7 @@ interface StudentSidebarProps {
 }
 
 const StudentSidebar = ({ isExpanded, setIsExpanded }: StudentSidebarProps) => {
-    const [activeLink, setActiveLink] = useState('Dashboard');
+    const [activeLink, setActiveLink] = useState(''); // No default active link for rarely used sidebar
 
     const sidebarVariants = {
         expanded: { width: '16rem' },
@@ -43,20 +37,11 @@ const StudentSidebar = ({ isExpanded, setIsExpanded }: StudentSidebarProps) => {
             initial={false}
             animate={isExpanded ? 'expanded' : 'compact'}
             variants={sidebarVariants}
-            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-            className="h-full bg-zinc-900 flex flex-col border-r border-neutral-700 relative"
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            className="h-full bg-black/20 backdrop-blur-xl flex flex-col border-r border-white/10 relative shadow-lg"
+            onMouseEnter={() => setIsExpanded(true)}
+            onMouseLeave={() => setIsExpanded(false)}
         >
-            <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="absolute top-1/2 -translate-y-1/2 right-0 translate-x-1/2 w-7 h-14 bg-zinc-900 hover:bg-green-600/80
-                   border-y-2 border-r-2 border-neutral-700 hover:border-green-500 rounded-r-lg
-                   flex items-center justify-center transition-colors duration-200 ease-in-out
-                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-green-500 z-20
-                   border-l-0"
-                aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-                <ChevronsLeft className={`transition-transform duration-500 ease-in-out ${isExpanded ? 'rotate-0' : 'rotate-180'}`} size={18} />
-            </button>
 
             <div className="flex items-center justify-center h-20 px-4 flex-shrink-0">
                 <AnimatePresence>
@@ -95,8 +80,8 @@ const StudentSidebar = ({ isExpanded, setIsExpanded }: StudentSidebarProps) => {
                         onClick={() => setActiveLink(item.name)}
                     />
                 ))}
-                <div className="border-t border-neutral-700 pt-4 mt-4">
-                    {/* Placeholder */}
+                <div className="border-t border-neutral-700 pt-4 mt-4 text-xs text-neutral-500 text-center">
+                    Icons by <a href="https://icons8.com" target="_blank" rel="noopener noreferrer" className="hover:text-white">Icons8</a>
                 </div>
             </div>
         </motion.aside>
@@ -104,27 +89,32 @@ const StudentSidebar = ({ isExpanded, setIsExpanded }: StudentSidebarProps) => {
 };
 
 // --- Sub-component for Nav Items ---
+interface NavItemType {
+    name: string;
+    iconUrl: string; // Changed to iconUrl for Icons8
+    href: string;
+}
+
 interface NavItemProps {
-    item: { name: string; icon: React.ElementType; href: string };
+    item: NavItemType;
     isExpanded: boolean;
     isActive: boolean;
     onClick: () => void;
 }
 
 const NavItem = ({ item, isExpanded, isActive, onClick }: NavItemProps) => {
-    const { name, icon: Icon, href } = item;
+    const { name, iconUrl, href } = item;
 
-    // THE FIX: We use a wrapper with `group` and a custom CSS tooltip
     return (
         <a
             href={href}
             onClick={onClick}
             data-active={isActive}
-            className="relative flex items-center p-2 rounded-lg transition-colors duration-200 group
-                 text-neutral-300 hover:bg-neutral-700/50 hover:text-white
-                 data-[active=true]:bg-green-600/50 data-[active=true]:text-white"
+            className="relative flex items-center p-2 rounded-lg transition-all duration-300 group
+                 text-neutral-300 hover:bg-white/10 hover:text-white
+                 data-[active=true]:bg-white/15 data-[active=true]:text-white"
         >
-            <Icon size={22} className="flex-shrink-0" />
+            <Image src={iconUrl} alt={name} width={22} height={22} className="flex-shrink-0" />
             <AnimatePresence>
                 {isExpanded && (
                     <motion.span

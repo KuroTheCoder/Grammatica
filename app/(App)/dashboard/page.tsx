@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useKeyPress } from '@/hooks/useKeyPress';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore'; // Import setDoc
 import { auth, db } from '@/lib/firebase';
 import { UserProfile, Badge, Skill } from '@/types/user';
 import { getMasteryStyles } from '@/lib/theme';
@@ -13,13 +13,17 @@ import { getMasteryStyles } from '@/lib/theme';
 // --- Component Imports (The Full Roster) ---
 import StudentSidebar from '@/components/dashboard/StudentSidebar';
 import GoalsWidget from '@/components/dashboard/GoalsWidget';
-import QuickAccessWidget from '@/components/dashboard/QuickAccessWidget';
+import FactTipWidget from '@/components/dashboard/FactTipWidget'; // Import FactTipWidget
 import DynamicDock, { ActiveView } from '@/components/dashboard/DynamicDock';
 import ProfileCard from '@/components/dashboard/ProfileCard';
 import WidgetCard from '@/components/shared/WidgetCard';
 import GridBackground from '@/components/shared/GridBackground';
 import InteractiveSpotlightBackground from '@/components/shared/InteractiveSpotlightBackground';
 import FloatingDustBackground from '@/components/shared/FloatingDustBackground';
+import FeedbackButton from '@/components/shared/FeedbackButton';
+import FeedbackModal from '@/components/shared/FeedbackModal';
+import OnboardingModal from '@/components/modals/OnboardingModal'; // Import OnboardingModal
+// import MockChallengeCompleter from '@/components/dashboard/MockChallengeCompleter'; // Import MockChallengeCompleter
 
 // --- Icon Imports (The Full Roster) ---
 import { IconType } from 'react-icons';
@@ -33,11 +37,12 @@ const StudentDashboardPage = () => {
     const [isSidebarExpanded, setSidebarExpanded] = useState(false);
     const [user] = useAuthState(auth);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-    const [activeView, setActiveView] = useState<ActiveView>('quests');
+    const [activeView, setActiveView] = useState<ActiveView>('dashboard');
     const [isDockVisible, setDockVisible] = useState(false);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false); // State for feedback modal
+    const [showOnboarding, setShowOnboarding] = useState(false); // State to control onboarding modal visibility
 
     // Keyboard shortcuts for power users
-    useKeyPress('b', () => setSidebarExpanded(prev => !prev));
     useKeyPress('d', () => setDockVisible(prev => !prev));
 
     // Effect for fetching user data
@@ -76,30 +81,55 @@ const StudentDashboardPage = () => {
                             ...(rawData.badges || []).map((badge: Omit<Badge, 'icon'>) => ({ ...badge, icon: badgeIconMap[badge.id] || FaCrown }))
                         ],
                         skills: (rawData.skills || []).map((skill: Omit<Skill, 'icon'>) => ({ ...skill, icon: skillIconMap[skill.label] || FaBookOpen })),
+                        onboardingCompleted: rawData.onboardingCompleted || false, // Read onboarding status
                     };
                     setUserProfile(processedProfile);
+
+                    // Show onboarding if not completed
+                    if (!rawData.onboardingCompleted) {
+                        setShowOnboarding(true);
+                    }
                 } else {
                     console.warn("No Firestore profile found for this user. Creating a temporary client-side profile.");
-                    const defaultProfile: UserProfile = { uid: user.uid, email: user.email || "", displayName: user.displayName || "New Student", role: ["student"], class: "Unassigned", avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`, profileStatus: "Ready to start learning!", mastery: "A1", streak: 0, xp: { current: 0, max: 100 }, badges: hardcodedBadges, skills: [] };
+                    const defaultProfile: UserProfile = { uid: user.uid, email: user.email || "", displayName: user.displayName || "New Student", role: ["student"], class: "Unassigned", avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`, profileStatus: "Ready to start learning!", mastery: "A1", streak: 0, xp: { current: 0, max: 100 }, badges: hardcodedBadges, skills: [], onboardingCompleted: false };
                     setUserProfile(defaultProfile);
+                    setShowOnboarding(true); // Show onboarding for new users
                 }
             };
             fetchUserProfile();
         }
     }, [user]);
 
+    // Function to handle onboarding completion
+    const handleOnboardingComplete = async () => {
+        if (user) {
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, { onboardingCompleted: true }, { merge: true });
+            setUserProfile(prev => prev ? { ...prev, onboardingCompleted: true } : null);
+            setShowOnboarding(false);
+        }
+    };
+
     // This function acts as our content router for the main widget area
     const renderActiveView = () => {
         switch (activeView) {
-            case 'quests':
-                return (<WidgetCard title="Goals and Status" key="goals"><GoalsWidget /></WidgetCard>);
+            case 'dashboard':
+                return (
+                    <div className="flex flex-col lg:flex-row gap-6 w-full">
+                        <WidgetCard title="Goals and Status" key="goals" className="flex-1"><GoalsWidget /></WidgetCard>
+                        <FactTipWidget key="fact-tip" className="w-80" /> {/* Fixed width for smaller section */}
+                    </div>
+                );
+            case 'learn':
+                return (<WidgetCard title="Learning Center" key="learn"><p>Learning modules coming soon...</p></WidgetCard>);
+            case 'ai_tutor':
+                return (<WidgetCard title="AI Tutor" key="ai_tutor"><p>AI Tutor coming soon...</p></WidgetCard>);
             case 'practice':
                 return (<WidgetCard title="Practice Arena" key="practice"><p>Practice modules coming soon...</p></WidgetCard>);
-            case 'leaderboard':
-                return (<WidgetCard title="Quick Access" key="quick"><QuickAccessWidget /></WidgetCard>);
-            // Add other cases here as we build them
+            case 'community':
+                return (<WidgetCard title="Community" key="community"><p>Community features coming soon...</p></WidgetCard>);
             default:
-                return (<WidgetCard title="Goals and Status" key="default-goals"><GoalsWidget /></WidgetCard>);
+                return null;
         }
     };
 
@@ -122,9 +152,27 @@ const StudentDashboardPage = () => {
             >
                 <ProfileCard user={userProfile} isCompact={isSidebarExpanded} />
 
+                {/* Mock component for testing XP and Streak updates */}
+                {/* <MockChallengeCompleter userProfile={userProfile} /> */}
+
                 <div className="flex-1 flex">
                     {renderActiveView()}
                 </div>
+
+                {/* Feedback Button */}
+                <div className="fixed bottom-24 right-6 z-50">
+                    <FeedbackButton onClick={() => setIsFeedbackModalOpen(true)} />
+                </div>
+
+                {/* Feedback Modal */}
+                <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
+
+                {/* Onboarding Modal */}
+                <OnboardingModal
+                    isOpen={showOnboarding}
+                    onClose={() => setShowOnboarding(false)}
+                    onComplete={handleOnboardingComplete}
+                />
 
                 {/* --- The Stealth Dock Summoning Zone --- */}
                 <div className="absolute bottom-0 left-0 right-0 h-40 flex items-end justify-center"

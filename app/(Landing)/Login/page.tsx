@@ -23,7 +23,6 @@ import { auth, db } from '@/lib/firebase';
 import {sendPasswordResetEmail, signInWithEmailAndPassword} from "firebase/auth";
 import {collection, doc, getDoc, limit, orderBy, query} from "firebase/firestore";
 import {useCollection} from 'react-firebase-hooks/firestore';
-import FeedbackButton from "@/components/shared/FeedbackButton";
 
 const InteractiveSpotlightBackground = dynamic(() => import('@/components/shared/InteractiveSpotlightBackground'), {ssr: false});
 
@@ -370,7 +369,6 @@ const LoginPage = () => {
             <style
                 dangerouslySetInnerHTML={{__html: `@keyframes spin-slow { to { transform: rotate(360deg); } } .animate-spin-slow { animation: spin-slow 4s linear infinite; }`}}/>
             <ClientOnly>
-                <FeedbackButton/>
                 <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}
                             transition={{duration: 0.5, delay: 0.2}}
                             className="w-full max-w-5xl bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-700 shadow-2xl shadow-emerald-900/50 overflow-hidden">
